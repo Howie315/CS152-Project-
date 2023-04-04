@@ -65,3 +65,17 @@ HRG-LC
 | *      | MUL     |
 | mod    | MOD     |
 
+#### Reserved words
+| Symbol | Token | 
+|--------|-------|
+| func   | FUNCTION |
+| {      | BEGINSCOPE | 
+| }      | ENDSCOPE |
+| (      | BEGINPARAM |
+| )      | ENDPARAM |
+| if     | IF |
+| else   | ELSE |
+| for    | FOR |
+| while  | WHILE | 
+| continue | CONTINUE | 
+
