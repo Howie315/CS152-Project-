@@ -17,7 +17,7 @@ peepee poopoo
 ## The experimental language should at least cover the following basic features:
 
 1. Integer scalar variables
-* int x; float y; double z; bool w;
+* int x; float y; double z; bool w; char i;
 
 2. One-dimensional arrays of integers
 * int array[]
