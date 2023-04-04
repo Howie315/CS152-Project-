@@ -41,7 +41,7 @@ peepee poopoo
 * read(), write()
 
 9. Comments
-* $ This is a comment. $
+* "$ This is a comment. $"
 
 * "$$ This is a multi
     line comment $$"
