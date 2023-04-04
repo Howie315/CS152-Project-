@@ -1,16 +1,10 @@
 # CS152-Project
-### Howie Nguyen, Ryan Hernandez, Godfrey Lozada
+## Howie Nguyen, Ryan Hernandez, Godfrey Lozada
 
 peepee poopoo
 
 # Phase 0
 
-
-| Requirement | Description |
-|-------------|-------------|
-| Name        | HRG*        |
-| Extension   | (.hrg)      |
-| Compiler    | HRG-LC      |
 1. Create a name for the experimental programming language
 * HRG
 
@@ -38,13 +32,13 @@ peepee poopoo
 * “<”, “==”, “>”, “~=”
 
 6. While loop (including "break" and "continue" loop control statements)
-*  
+*  while (is_open){ "do something" continue; if is_open = false: break;}
 
 7. If-then-else statements
-*
+* if(){}, else{}
 
 8. Read and write statements
-*
+* 
 
 9. Comments
 *
