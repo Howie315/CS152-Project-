@@ -47,4 +47,4 @@ peepee poopoo
     line comment $$"
 
 10. Functions (that can take multiple scalar arguments and return a single scalar result)
-* 
+* int func{ return int;} double func { return double;} string func { return string; }
