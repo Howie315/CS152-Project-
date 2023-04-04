@@ -38,7 +38,7 @@ peepee poopoo
 * if( CONDITION ) { BODY }, else{ BODY }
 
 8. Read and write statements
-* read(), write()
+* intake(), defecate("")
 
 9. Comments
 * "$ This is a comment. $"
@@ -47,4 +47,4 @@ peepee poopoo
     line comment $$"
 
 10. Functions (that can take multiple scalar arguments and return a single scalar result)
-*
+* 
