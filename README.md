@@ -17,7 +17,7 @@ HRG-LC
 | Feature | Example |
 |---------|---------|
 | Integer scalar variables | int x; float y; double z; bool w; char i; |
-| One-dimensional arrays of integers | int array[]; float array[]; double array[]; bool array[]; char string[]; |
+| One-dimensional arrays of integers | int array[x]; float array[x]; double array[x]; bool array[x]; char string[x]; (x being a fixed number)|
 | Assignment statements | int array [] = {1, 0, 1}; , int number = 0; etc.. |
 | Arithmetic operators | “+”, “-”, “\*”, “/” |
 | Relational operators |  “<”, “==”, “>”, “~=” |
@@ -27,7 +27,7 @@ HRG-LC
 | Comments |"$ This is a comment. $" |
 |  Functions (that can take multiple scalar arguments and return a single scalar result) | int func{ return int;} double func { return double;} string func { return string; } |
 
-## More Information
+### More Information
 1. Define how comments would look like in your language
 * Defined above already. Single line comments start and end with $
 * Multi-line comments start with and end with $$
@@ -44,3 +44,17 @@ HRG-LC
 4. What would be whitespces in your laguage
 * Whitespace will be ignorable in our language and only for the purpose of readability for the programmer.
 * Semi-colons will be used to determine statements and not whitespace.
+
+### Tokens
+| Symbol | Token |
+|--------|-------|
+| int    | INTEGER |
+| dbl    | DOUBLE  |
+| flt    | FLOAT   |
+| bln    | BOOLEAN |
+| chr    | CHAR    |
+| +      | ADD     |
+| -      | SUB     |
+| /      | DIV     |
+| *      | MUL     |
+| mod    | MOD     |
