@@ -78,4 +78,8 @@ HRG-LC
 | for    | FOR |
 | while  | WHILE | 
 | continue | CONTINUE | 
-
+| break  | BREAK |
+| true   | TRUE |
+| false  | FALSE |
+| return | RETURN |
+| ~      | NOT |
