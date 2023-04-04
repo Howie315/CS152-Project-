@@ -1,10 +1,16 @@
 # CS152-Project
-## Howie Nguyen, Ryan Hernandez, Godfrey Lozada
+### Howie Nguyen, Ryan Hernandez, Godfrey Lozada
 
 peepee poopoo
 
 # Phase 0
 
+
+| Requirement | Description |
+|-------------|-------------|
+| Name        | HRG*        |
+| Extension   | (.hrg)      |
+| Compiler    | HRG-LC      |
 1. Create a name for the experimental programming language
 * HRG
 
