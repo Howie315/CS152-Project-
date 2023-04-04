@@ -35,13 +35,16 @@ peepee poopoo
 *  while (is_open){ "do something" continue; if is_open = false: break;}
 
 7. If-then-else statements
-* if(){}, else{}
+* if( CONDITION ) { BODY }, else{ BODY }
 
 8. Read and write statements
-* 
+* read(), write()
 
 9. Comments
-*
+* $ This is a comment. $
+
+* $$ This is a multi
+    line comment $$
 
 10. Functions (that can take multiple scalar arguments and return a single scalar result)
 *
