@@ -38,7 +38,7 @@ peepee poopoo
 * if( CONDITION ) { BODY }, else{ BODY }
 
 8. Read and write statements
-* intake(), defecate("")
+* INPUT = intake(), defecate(OUTPUT)
 
 9. Comments
 * "$ This is a comment. $"
