@@ -20,7 +20,7 @@ peepee poopoo
 * int x; float y; double z; bool w; char i;
 
 2. One-dimensional arrays of integers
-* int array[]
+* int array[]; float array[]; double array[]; bool array[]; char string[];
 
 3. Assignment statements
 * int array [] = {1, 0, 1}; , int number = 0; etc..
@@ -38,7 +38,7 @@ peepee poopoo
 * if( CONDITION ) { BODY }, else{ BODY }
 
 8. Read and write statements
-* INPUT = intake(), defecate(OUTPUT)
+* INPUT = intake(); defecate(OUTPUT);
 
 9. Comments
 * "$ This is a comment. $"
