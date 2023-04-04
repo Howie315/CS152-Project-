@@ -46,6 +46,7 @@ HRG-LC
 * Semi-colons will be used to determine statements and not whitespace.
 
 ### Tokens
+#### Variables
 | Symbol | Token |
 |--------|-------|
 | int    | INTEGER |
@@ -53,8 +54,14 @@ HRG-LC
 | flt    | FLOAT   |
 | bln    | BOOLEAN |
 | chr    | CHAR    |
+
+#### Arithmetic
+| Symbol | Token |
+|--------|-------|
+| =      | ASSIGNMENT |
 | +      | ADD     |
 | -      | SUB     |
 | /      | DIV     |
 | *      | MUL     |
 | mod    | MOD     |
+
