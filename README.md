@@ -20,19 +20,19 @@ peepee poopoo
 * int x; float y; double z; bool w;
 
 2. One-dimensional arrays of integers
-*
+* int array[]
 
 3. Assignment statements
-*
+* int array [] = {1, 0, 1}; , int number = 0; etc..
 
 4. Arithmetic operators (e.g., “+”, “-”, “*”, “/”)
-*
+* “+”, “-”, “*”, “/”
 
 5. Relational operators (e.g., “<”, “==”, “>”, “!=”)
-*
+* “<”, “==”, “>”, “~=”
 
 6. While loop (including "break" and "continue" loop control statements)
-*
+*  
 
 7. If-then-else statements
 *
