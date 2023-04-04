@@ -43,3 +43,4 @@ HRG-LC
 
 4. What would be whitespces in your laguage
 * Whitespace will be ignorable in our language and only for the purpose of readability for the programmer.
+* Semi-colons will be used to determine statements and not whitespace.
