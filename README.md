@@ -39,7 +39,7 @@ HRG-LC
 * Reserved words (like C++ keywords, such as int) cannot be used as names
 
 3. Whether your language is case sensitive or not
-Language will be case sensitive to allow for greater range of character usage.
+* Language will be case sensitive to allow for greater range of character usage.
 
 4. What would be whitespces in your laguage
-Whitespace will be ignorable in our language and only for the purpose of readability for the programmer.
+* Whitespace will be ignorable in our language and only for the purpose of readability for the programmer.
