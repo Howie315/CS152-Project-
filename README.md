@@ -43,8 +43,8 @@ peepee poopoo
 9. Comments
 * $ This is a comment. $
 
-* $$ This is a multi
-    line comment $$
+* "$$ This is a multi
+    line comment $$"
 
 10. Functions (that can take multiple scalar arguments and return a single scalar result)
 *
