@@ -1,4 +1,4 @@
- void func{
+ void func main(){
     int a = 0;
     int b = 0;
     int c = 0;
@@ -9,21 +9,27 @@
 
     $ Addition $
     c = a + b;
-
+    defecate(c) $print out 19$
     $ Subtraction $
-    c = a - b;
+    c = a - b; 
+    defecate(c) $ print out 11 $
 
     $ Multiplication $
-    c = a * b;
+    c = a * b; 
+    defecate(c) $ print out 60 $
 
     $ Division $
-    c = a / b;
+    c = a / b; 
+    defecate(c) $ print out 4 $
 
     $ Modulus $
-    c = a % b;
+    c = a % b; $ 
+    defecate(c) $ print out 3$
 
     $ 'Complex' Expression $
     a = 4;
     b = 2;
     c = (a + b) / 2;
-}
+
+    defecate(c) $ print out 3$
+}   

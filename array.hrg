@@ -1,0 +1,23 @@
+void func main(){
+    int a[20];
+    int b;
+    int c;
+
+    b = 3;
+    c = 5;
+
+    a[0] = b + c;
+
+    $Output$
+    defecate(a[0]);
+
+    a[1] = 100;
+    defecate(a[1]);
+
+    a[2] = 300;
+    defecate(a[2]);
+
+    a[3] = a[0] * 2;
+    defecate(a[3]) $ should print out 16 $
+
+}
