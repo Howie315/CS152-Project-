@@ -25,7 +25,7 @@ HRG-LC
 | If-then-else statements | if( CONDITION ) { BODY }, else{ BODY } | 
 | Read and write statements | INPUT = intake(); defecate(OUTPUT); |
 | Comments |"$ This is a comment. $" |
-|  Functions (that can take multiple scalar arguments and return a single scalar result) | int func{ return int;} double func { return double;} string func { return string; } |
+|  Functions (that can take multiple scalar arguments and return a single scalar result) | int func{ return int;} double func { return double;} char func { return char; }  void func{ }|
 
 ### More Information
 1. Define how comments would look like in your language
