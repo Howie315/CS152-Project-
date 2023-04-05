@@ -9,13 +9,13 @@ void func main(){
     a[0] = b + c;
 
     $Output$
-    defecate(a[0]);
+    defecate(a[0]); $ Print out 8$
 
     a[1] = 100;
-    defecate(a[1]);
+    defecate(a[1]); $ Print out 100 $
 
     a[2] = 300;
-    defecate(a[2]);
+    defecate(a[2]); $ Print out 300 $
 
     a[3] = a[0] * 2;
     defecate(a[3]) $ should print out 16 $

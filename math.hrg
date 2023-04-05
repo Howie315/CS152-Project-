@@ -10,6 +10,7 @@
     $ Addition $
     c = a + b;
     defecate(c) $print out 19$
+    
     $ Subtraction $
     c = a - b; 
     defecate(c) $ print out 11 $
@@ -20,7 +21,7 @@
 
     $ Division $
     c = a / b; 
-    defecate(c) $ print out 4 $
+    defecate(c) $ print out 3 $
 
     $ Modulus $
     c = a % b; $ 
