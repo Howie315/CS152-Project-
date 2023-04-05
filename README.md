@@ -83,3 +83,4 @@ HRG-LC
 | false  | FALSE |
 | return | RETURN |
 | ~      | NOT |
+| void   | VOID |
