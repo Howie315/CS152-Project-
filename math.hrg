@@ -1,0 +1,29 @@
+ void func{
+    int a = 0;
+    int b = 0;
+    int c = 0;
+
+    a = 15;
+    b = 4;
+
+
+    $ Addition $
+    c = a + b;
+
+    $ Subtraction $
+    c = a - b;
+
+    $ Multiplication $
+    c = a * b;
+
+    $ Division $
+    c = a / b;
+
+    $ Modulus $
+    c = a % b;
+
+    $ 'Complex' Expression $
+    a = 4;
+    b = 2;
+    c = (a + b) / 2;
+}
