@@ -55,7 +55,7 @@ HRG-LC
 | bln    | BOOLEAN |
 | chr    | CHAR    |
 
-#### Arithmetic
+#### Arithmetic and Comparators
 | Symbol | Token |
 |--------|-------|
 | =      | ASSIGNMENT |
@@ -64,6 +64,11 @@ HRG-LC
 | /      | DIV     |
 | *      | MUL     |
 | mod    | MOD     |
+| :=     | EQ      |
+| <      | LT      |
+| <=     | LTE     |
+| >      | GT      |
+| >=     | GTE     |
 
 #### Reserved words
 | Symbol | Token | 
