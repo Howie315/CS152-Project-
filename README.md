@@ -69,6 +69,7 @@ HRG-LC
 | <=     | LTE     |
 | >      | GT      |
 | >=     | GTE     |
+| ~=     | NOT     |
 
 #### Reserved words
 | Symbol | Token | 
