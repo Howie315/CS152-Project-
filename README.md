@@ -90,3 +90,5 @@ HRG-LC
 | return | RETURN |
 | ~      | NOT |
 | void   | VOID |
+| and   | AND |
+| or   | OR |
