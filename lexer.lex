@@ -29,7 +29,7 @@ BREAK    break
 {ELSE}        { printf("ELSE\n"); programCharacterCount += 4; lineCharacterCount += 4; }
 {FOR}         { printf("FOR\n"); programCharacterCount += 3; lineCharacterCount += 3; }
 {CONTINUE}    { printf("CONTINUE\n"); programCharacterCount += 8; lineCharacterCount += 8; }
-{BREAK}       { printf("BREAK\n"); programCharacterCount += 4; lineCharacterCount += 4; }
+{BREAK}       { printf("BREAK\n"); programCharacterCount += 5; lineCharacterCount += 5; }
 
 {DIGIT}+      {printf("NUMBER: %s\n", yytext); }
 {ALPHA}+      {printf("TOKEN:  %s\n", yytext); }
