@@ -24,12 +24,12 @@ BREAK    break
 {FLOAT}        { printf("FLOAT\n"); programCharacterCount += 3; lineCharacterCount += 3;}
 {BOOLEAN}        { printf("BOOLEAN\n"); programCharacterCount += 3; lineCharacterCount += 3; }
 {CHAR}        { printf("CHAR\n"); programCharacterCount += 3; lineCharacterCount += 3; }
-{WHILE}       { printf("WHILE\n"); programCharacterCount += 3; lineCharacterCount += 3; }
-{IF}          { printf("IF\n"); programCharacterCount += 3; lineCharacterCount += 3; }
-{ELSE}        { printf("ELSE\n"); programCharacterCount += 3; lineCharacterCount += 3; }
+{WHILE}       { printf("WHILE\n"); programCharacterCount += 5; lineCharacterCount += 5; }
+{IF}          { printf("IF\n"); programCharacterCount += 2; lineCharacterCount += 2; }
+{ELSE}        { printf("ELSE\n"); programCharacterCount += 4; lineCharacterCount += 4; }
 {FOR}         { printf("FOR\n"); programCharacterCount += 3; lineCharacterCount += 3; }
-{CONTINUE}    { printf("CONTINUE\n"); programCharacterCount += 3; lineCharacterCount += 3; }
-{BREAK}       { printf("BREAK\n"); programCharacterCount += 3; lineCharacterCount += 3; }
+{CONTINUE}    { printf("CONTINUE\n"); programCharacterCount += 8; lineCharacterCount += 8; }
+{BREAK}       { printf("BREAK\n"); programCharacterCount += 4; lineCharacterCount += 4; }
 
 {DIGIT}+      {printf("NUMBER: %s\n", yytext); }
 {ALPHA}+      {printf("TOKEN:  %s\n", yytext); }
