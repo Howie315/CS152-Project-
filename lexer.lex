@@ -17,6 +17,8 @@ ELSE    else
 FOR     for
 CONTINUE continue 
 BREAK    break 
+COMMENT  "$"
+MULTILINECOMMENT "$$"
 
 %%
 {INTEGER}        { printf("INTEGER\n"); programCharacterCount += 3; lineCharacterCount += 3; }
@@ -30,6 +32,8 @@ BREAK    break
 {FOR}         { printf("FOR\n"); programCharacterCount += 3; lineCharacterCount += 3; }
 {CONTINUE}    { printf("CONTINUE\n"); programCharacterCount += 8; lineCharacterCount += 8; }
 {BREAK}       { printf("BREAK\n"); programCharacterCount += 5; lineCharacterCount += 5; }
+{COMMENT}     { printf("COMMENT\n"); programCharacterCount += 7; lineCharacterCount += 7; }
+{MULTILINECOMMENT}  { printf("MULTILINECOMMENT\n"); programCharacterCount += 16; lineCharacterCount += 16; }
 
 {DIGIT}+      {printf("NUMBER: %s\n", yytext); }
 {ALPHA}+      {printf("TOKEN:  %s\n", yytext); }
