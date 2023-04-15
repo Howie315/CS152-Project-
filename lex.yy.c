@@ -813,7 +813,7 @@ case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
 #line 33 "lexer.lex"
-{ printf("COMMENT\n"); programCharacterCount += 7; lineCharacterCount += 7; }
+{ printf("COMMENT\n"); programCharacterCount += 2; lineCharacterCount += 2; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP

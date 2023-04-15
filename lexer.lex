@@ -17,7 +17,7 @@ ELSE    else
 FOR     for
 CONTINUE continue 
 BREAK    break 
-COMMENT  (\$\$([^(\$\$)]*(\n?))*\$\$)|(\$[^(\$|\n)]*\$)
+COMMENT (\$\$([^(\$\$)]*(\n?))*\$\$)|(\$[^(\$|\n)]*\$)
 %%
 {INTEGER}        { printf("INTEGER\n"); programCharacterCount += 3; lineCharacterCount += 3; }
 {DOUBLE}    { printf("DOUBLE\n"); programCharacterCount += 3; lineCharacterCount += 3; }
@@ -30,7 +30,7 @@ COMMENT  (\$\$([^(\$\$)]*(\n?))*\$\$)|(\$[^(\$|\n)]*\$)
 {FOR}         { printf("FOR\n"); programCharacterCount += 3; lineCharacterCount += 3; }
 {CONTINUE}    { printf("CONTINUE\n"); programCharacterCount += 8; lineCharacterCount += 8; }
 {BREAK}       { printf("BREAK\n"); programCharacterCount += 5; lineCharacterCount += 5; }
-{COMMENT}     { printf("COMMENT\n"); programCharacterCount += 7; lineCharacterCount += 7; }
+{COMMENT}       { printf("COMMENT\n"); programCharacterCount += 2; lineCharacterCount += 2; }
 {DIGIT}+      {printf("NUMBER: %s\n", yytext); }
 {ALPHA}+      {printf("TOKEN:  %s\n", yytext); }
 \n        { lineCount++; programCharacterCount++; lineCharacterCount = 0; }
