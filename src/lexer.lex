@@ -56,7 +56,7 @@ NEWLINE		\n
 WHITESPACE	\t|" "
 
 IDENTIFIER	[a-zA-Z_][a-zA-Z_0-9]*
-BAD_IDENTIFIER	[0-9]+[a-zA-Z_][a-zA-Z_0-9]+
+BAD_IDENTIFIER	[0-9]+([a-zA-Z]+[a-zA-Z0-9]*)
 
 COMMENT		(\$\$([^(\$\$)]*(\n?))*\$\$)|(\$[^(\$|\n)]*\$)
 
