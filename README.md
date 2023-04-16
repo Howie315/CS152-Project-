@@ -33,7 +33,7 @@ HRG-LC
 * Multi-line comments start with and end with $$
 
 2. Define what would be the valid identifier
-* Names can ONLY contain letters and underscores
+* Names can contain letters, numbers, and underscores
 * Names must begin with a letter or an underscore (_)
 * Names are case sensitive (myVar and myvar are different variables)
 * Reserved words (like C++ keywords, such as int) cannot be used as names
