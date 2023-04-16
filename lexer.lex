@@ -57,6 +57,9 @@ IDENTIFIER [a-z]([A-Za-z]|[0-9])*
 {GTE}     	  { printf("GTE\n"); programCharacterCount += 3; lineCharacterCount += 3; }
 {NE}          { printf("NE\n"); programCharacterCount += 2; lineCharacterCount += 2; }
 
+\$\$[^\$]*\$+(?:[^\$\$][^\$]*)\$\$  { printf("COMMENT(MULTI): %s\n", yytext); }  
+\$[^\$]*\$       { printf("COMMENT: %s\n", yytext); }
+
 {DIGIT}+      {printf("NUMBER: %s\n", yytext); }
 {ALPHA}+      {printf("TOKEN:  %s\n", yytext); }
 {DECIMAL}     { printf("DECIMAL: %s\n", yytext); } 
@@ -68,6 +71,7 @@ IDENTIFIER [a-z]([A-Za-z]|[0-9])*
 {CHAR}{WS}{IDENTIFIER}{WS}{ASSIGN}{WS}'{ALPHA}' {printf("CHAR_ASSIGN: %s\n", yytext); }
 
 {INTEGER}{WS}{IDENTIFIER}\[{DIGIT}+\] {printf("1D_INT_ARRAY: %s\n", yytext); }
+
 
 \n        { lineCount++; programCharacterCount++; lineCharacterCount = 0; }
 " "        { programCharacterCount++; lineCharacterCount++;}
