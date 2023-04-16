@@ -3,11 +3,11 @@ void func main()
   int i;
   
   i = 0;
-  while i <= 10
+  while (i <= 10)
     {
         defecate(i);
       
-        if i > 3 then
+        if (i > 3)
         {
           break;
         }
