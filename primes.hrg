@@ -21,7 +21,7 @@ void func main() {
 	$ make the array $
 	i = 2;
 	while (i <= sqrt_n) {
-		if (a[i] == 0) {
+		if (a[i] := 0) {
 			$ i prime, so eliminate its multiples $
 			j = i+i;
 			while (j <= n) {
