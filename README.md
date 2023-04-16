@@ -20,7 +20,7 @@ HRG-LC
 | One-dimensional arrays of integers | int array[x]; float array[x]; double array[x]; bool array[x]; char string[x]; (x being a fixed number)|
 | Assignment statements | int array [] = {1, 0, 1}; , int number = 0; etc.. |
 | Arithmetic operators | “+”, “-”, “\*”, “/” |
-| Relational operators |  “<”, “==”, “>”, “~=” |
+| Relational operators |  “<”, “:=”, “>”, “~=” |
 | While loop (including "break" and "continue" loop control statements) | while (is_open){ "do something" continue; if is_open = false: break;} |
 | If-then-else statements | if( CONDITION ) { BODY }, else{ BODY } | 
 | Read and write statements | INPUT = intake(); defecate(OUTPUT); |
