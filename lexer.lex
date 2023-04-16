@@ -16,8 +16,6 @@ FOR     for
 CONTINUE continue 
 BREAK    break 
 
-
-
 ASSIGN   =
 EQ       :=
 LT		 <
@@ -34,8 +32,8 @@ BOOL	 (true|false|0|1)
 WS       [ \t\n]+
 IDENTIFIER [a-z]([A-Za-z]|[0-9])*
 
-
 %%
+
 {INTEGER}        { printf("INTEGER\n"); programCharacterCount += 3; lineCharacterCount += 3; }
 {DOUBLE}    { printf("DOUBLE\n"); programCharacterCount += 3; lineCharacterCount += 3; }
 {FLOAT}        { printf("FLOAT\n"); programCharacterCount += 3; lineCharacterCount += 3;}
@@ -56,9 +54,7 @@ IDENTIFIER [a-z]([A-Za-z]|[0-9])*
 {GT}          { printf("GT\n"); programCharacterCount += 2; lineCharacterCount += 2; }
 {GTE}     	  { printf("GTE\n"); programCharacterCount += 3; lineCharacterCount += 3; }
 {NE}          { printf("NE\n"); programCharacterCount += 2; lineCharacterCount += 2; }
-
-\$\$[^\$]*\$+(?:[^\$\$][^\$]*)\$\$  { printf("COMMENT(MULTI): %s\n", yytext); }  
-\$[^\$]*\$       { printf("COMMENT: %s\n", yytext); }
+{BREAK}       { printf("BREAK\n"); programCharacterCount += 5; lineCharacterCount += 5; }
 
 {DIGIT}+      {printf("NUMBER: %s\n", yytext); }
 {ALPHA}+      {printf("TOKEN:  %s\n", yytext); }
@@ -71,6 +67,7 @@ IDENTIFIER [a-z]([A-Za-z]|[0-9])*
 {CHAR}{WS}{IDENTIFIER}{WS}{ASSIGN}{WS}'{ALPHA}' {printf("CHAR_ASSIGN: %s\n", yytext); }
 
 {INTEGER}{WS}{IDENTIFIER}\[{DIGIT}+\] {printf("1D_INT_ARRAY: %s\n", yytext); }
+(\$\$([^(\$\$)]*(\n?))*\$\$)|(\$[^(\$|\n)]*\$)       { printf("COMMENT\n", yytext); }
 
 
 \n        { lineCount++; programCharacterCount++; lineCharacterCount = 0; }
