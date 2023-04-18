@@ -62,63 +62,61 @@ COMMENT		(\$\$([^(\$\$)]*(\n?))*\$\$)|(\$[^(\$|\n)]*\$)
 
 %%
 
-{INTEGER}       	{ fprintf(yyout, "INTEGER\n"); lineCharacterCount += yyleng; }
-{DOUBLE}    		{ fprintf(yyout, "DOUBLE\n"); lineCharacterCount += yyleng; }
-{FLOAT}        		{ fprintf(yyout, "FLOAT\n"); lineCharacterCount += yyleng;}
-{BOOLEAN}       	{ fprintf(yyout, "BOOLEAN\n"); lineCharacterCount += yyleng; }
-{CHAR}        		{ fprintf(yyout, "CHAR\n"); lineCharacterCount += yyleng; }
+{INTEGER}       	{ return INTEGER }
+{DOUBLE}    		{ return DOUBLE }
+{BOOLEAN}       	{ fprintf(yyout, "BOOLEAN\n"); lineCharacterCount += yyleng; return BOOLEAN; }
+{CHAR}        		{ fprintf(yyout, "CHAR\n"); lineCharacterCount += yyleng; return CHAR; }
 
-{ASSIGN}      		{ fprintf(yyout, "ASSIGN\n"); lineCharacterCount += yyleng; }
-{ADD}			{ fprintf(yyout, "ADD\n"); lineCharacterCount += yyleng; }
-{SUB}			{ fprintf(yyout, "SUB\n"); lineCharacterCount += yyleng; }
-{DIV}			{ fprintf(yyout, "DIV\n"); lineCharacterCount += yyleng;}
-{MUL}			{ fprintf(yyout, "MUL\n"); lineCharacterCount += yyleng;}
-{MOD}			{ fprintf(yyout, "MOD\n"); lineCharacterCount += yyleng;}
-{EQ}			{ fprintf(yyout, "EQ\n"); lineCharacterCount += yyleng; }
-{LT}          		{ fprintf(yyout, "LT\n"); lineCharacterCount += yyleng; }
-{LTE}         		{ fprintf(yyout, "LTE\n"); lineCharacterCount += yyleng; }
-{GT}          		{ fprintf(yyout, "GT\n"); lineCharacterCount += yyleng; }
-{GTE}     		{ fprintf(yyout, "GTE\n"); lineCharacterCount += yyleng; }
-{NE}          		{ fprintf(yyout, "NE\n"); lineCharacterCount += yyleng; }
+{ASSIGN}      		{ fprintf(yyout, "ASSIGN\n"); lineCharacterCount += yyleng; return ASSIGN; }
+{ADD}			{ fprintf(yyout, "ADD\n"); lineCharacterCount += yyleng; return ADD; }
+{SUB}			{ fprintf(yyout, "SUB\n"); lineCharacterCount += yyleng; return SUB; }
+{DIV}			{ fprintf(yyout, "DIV\n"); lineCharacterCount += yyleng; return DIV; }
+{MUL}			{ fprintf(yyout, "MUL\n"); lineCharacterCount += yyleng; return MUL; }
+{MOD}			{ fprintf(yyout, "MOD\n"); lineCharacterCount += yyleng; return MOD; }
+{EQ}			{ fprintf(yyout, "EQ\n"); lineCharacterCount += yyleng; retrun EQ; }
+{LT}          		{ fprintf(yyout, "LT\n"); lineCharacterCount += yyleng; retrun LT; }
+{LTE}         		{ fprintf(yyout, "LTE\n"); lineCharacterCount += yyleng; return LTE; }
+{GT}          		{ fprintf(yyout, "GT\n"); lineCharacterCount += yyleng; return GT; }
+{GTE}     		{ fprintf(yyout, "GTE\n"); lineCharacterCount += yyleng; return GTE; }
+{NE}          		{ fprintf(yyout, "NE\n"); lineCharacterCount += yyleng; return NE; }
 
-{FUNCTION}		{ fprintf(yyout, "FUNCTION\n"); lineCharacterCount += yyleng;}
-{BEGINSCOPE}		{ fprintf(yyout, "BEGINSCOPE\n"); lineCharacterCount += yyleng;}
-{ENDSCOPE}		{ fprintf(yyout, "ENDSCOPE\n"); lineCharacterCount += yyleng;}
-{BEGINPARAM}		{ fprintf(yyout, "BEGINPARAM\n"); lineCharacterCount += yyleng;}
-{ENDPARAM}		{ fprintf(yyout, "ENDPARAM\n"); lineCharacterCount += yyleng;}
-{BEGINBRACKET}		{ fprintf(yyout, "BEGINBRACKET\n"); lineCharacterCount += yyleng;}
-{ENDBRACKET}		{ fprintf(yyout, "ENDBRACKET\n"); lineCharacterCount += yyleng;}
-{IF}          		{ fprintf(yyout, "IF\n"); lineCharacterCount += yyleng; }
-{ELSE}        		{ fprintf(yyout, "ELSE\n"); lineCharacterCount += yyleng; }
-{FOR}         		{ fprintf(yyout, "FOR\n"); lineCharacterCount += yyleng; }
-{WHILE}       		{ fprintf(yyout, "WHILE\n"); lineCharacterCount += yyleng; }
-{CONTINUE}    		{ fprintf(yyout, "CONTINUE\n"); lineCharacterCount += yyleng; }
-{BREAK}       		{ fprintf(yyout, "BREAK\n"); lineCharacterCount += yyleng; }
-{TRUE}			{ fprintf(yyout, "TRUE\n"); lineCharacterCount += yyleng;}
-{FALSE}			{ fprintf(yyout, "FALSE\n"); lineCharacterCount += yyleng;}
-{RETURN}		{ fprintf(yyout, "RETURN\n"); lineCharacterCount += yyleng;}
-{VOID}			{ fprintf(yyout, "VOID\n"); lineCharacterCount += yyleng;}
-{NOT}			{ fprintf(yyout, "NOT\n"); lineCharacterCount += yyleng;}
-{AND}			{ fprintf(yyout, "AND\n"); lineCharacterCount += yyleng;}
-{OR}			{ fprintf(yyout, "OR\n"); lineCharacterCount += yyleng;}
-{SEMICOLON}		{ fprintf(yyout, "SEMICOLON\n"); lineCharacterCount += yyleng; }
-{COMMA}			{ fprintf(yyout, "COMMA\n"); lineCharacterCount += yyleng;}
+{FUNCTION}		{ fprintf(yyout, "FUNCTION\n"); lineCharacterCount += yyleng; return FUNCTION; }
+{BEGINSCOPE}		{ fprintf(yyout, "BEGINSCOPE\n"); lineCharacterCount += yyleng; return BEGINSCOPE; }
+{ENDSCOPE}		{ fprintf(yyout, "ENDSCOPE\n"); lineCharacterCount += yyleng; return ENDSCOPE; }
+{BEGINPARAM}		{ fprintf(yyout, "BEGINPARAM\n"); lineCharacterCount += yyleng; return BEGINPARAM; }
+{ENDPARAM}		{ fprintf(yyout, "ENDPARAM\n"); lineCharacterCount += yyleng; return ENDPARAM; }
+{BEGINBRACKET}		{ fprintf(yyout, "BEGINBRACKET\n"); lineCharacterCount += yyleng; return BEGINBRACKET; }
+{ENDBRACKET}		{ fprintf(yyout, "ENDBRACKET\n"); lineCharacterCount += yyleng; return ENDBRACKET; }
+{IF}          		{ fprintf(yyout, "IF\n"); lineCharacterCount += yyleng; return IF;}
+{ELSE}        		{ fprintf(yyout, "ELSE\n"); lineCharacterCount += yyleng; return ELSE; }
+{FOR}         		{ fprintf(yyout, "FOR\n"); lineCharacterCount += yyleng; return FOR; }
+{WHILE}       		{ fprintf(yyout, "WHILE\n"); lineCharacterCount += yyleng; return WHILE; }
+{CONTINUE}    		{ fprintf(yyout, "CONTINUE\n"); lineCharacterCount += yyleng; return CONTINUE;}
+{BREAK}       		{ fprintf(yyout, "BREAK\n"); lineCharacterCount += yyleng; return BREAK;}
+{TRUE}			{ fprintf(yyout, "TRUE\n"); lineCharacterCount += yyleng; return TRUE; }
+{FALSE}			{ fprintf(yyout, "FALSE\n"); lineCharacterCount += yyleng; return FALSE; }
+{RETURN}		{ fprintf(yyout, "RETURN\n"); lineCharacterCount += yyleng; return RETURN; }
+{VOID}			{ fprintf(yyout, "VOID\n"); lineCharacterCount += yyleng; return VOID; }
+{NOT}			{ fprintf(yyout, "NOT\n"); lineCharacterCount += yyleng; return NOT; }
+{AND}			{ fprintf(yyout, "AND\n"); lineCharacterCount += yyleng; return AND; }
+{OR}			{ fprintf(yyout, "OR\n"); lineCharacterCount += yyleng; return OR; }
+{SEMICOLON}		{ fprintf(yyout, "SEMICOLON\n"); lineCharacterCount += yyleng; return SEMICOLON; }
+{COMMA}			{ fprintf(yyout, "COMMA\n"); lineCharacterCount += yyleng; return COMMA; }
 
-{OUTPUT}		{ fprintf(yyout, "OUTPUT\n"); lineCharacterCount += yyleng;}
-{INPUT}			{ fprintf(yyout, "INPUT\n"); lineCharacterCount += yyleng;}
+{OUTPUT}		{ fprintf(yyout, "OUTPUT\n"); lineCharacterCount += yyleng; return OUTPUT; }
+{INPUT}			{ fprintf(yyout, "INPUT\n"); lineCharacterCount += yyleng; return INPUT; }
 
-{IDENTIFIER}   		{ fprintf(yyout, "IDENTIFIER: %s\n", yytext); lineCharacterCount += yyleng; }
-{BAD_IDENTIFIER}	{ printf("Error: Invalid identifier %s on line %d, col %d\n", yytext, lineCount + 1, lineCharacterCount + 1); lineCharacterCount += yyleng;}
+{IDENTIFIER}   		{ fprintf(yyout, "IDENTIFIER: %s\n", yytext); lineCharacterCount += yyleng; return IDENTIFIER; }
+{BAD_IDENTIFIER}	{ printf("Error: Invalid identifier %s on line %d, col %d\n", yytext, lineCount + 1, lineCharacterCount + 1); lineCharacterCount += yyleng; return BAD_IDENTIFIER; }
  
-{COMMENT}		{ lineCharacterCount += yyleng; }
+{COMMENT}		{ lineCharacterCount += yyleng; return COMMENT; }
 
-{NUMBER}      		{ fprintf(yyout, "NUMBER: %s\n", yytext); lineCharacterCount += yyleng; }
-{DECIMAL}    		{ fprintf(yyout, "DECIMAL: %s\n", yytext); lineCharacterCount += yyleng; }
+{NUMBER}      		{ fprintf(yyout, "NUMBER: %s\n", yytext); lineCharacterCount += yyleng; return NUMBER; }
+{DECIMAL}    		{ fprintf(yyout, "DECIMAL: %s\n", yytext); lineCharacterCount += yyleng; return DECIMAL; }
 
-
-{NEWLINE}       	{ lineCount++; lineCharacterCount = 0; }
-{WHITESPACE}    	{ lineCharacterCount += yyleng; }
-.       		{ printf("Error: Unrecognized symbol \"%s\" on line %d, col %d\n", yytext, lineCount + 1, lineCharacterCount + 1); lineCharacterCount += yyleng; }
+{NEWLINE}       	{ lineCount++; lineCharacterCount = 0; return NEWLINE; }
+{WHITESPACE}    	{ lineCharacterCount += yyleng; return WHITESPACE; }
+.       		{ printf("Error: Unrecognized symbol \"%s\" on line %d, col %d\n", yytext, lineCount + 1, lineCharacterCount + 1); lineCharacterCount += yyleng; return .;}
 %%
 
 int main(int argc, char* argv[]) {
