@@ -56,14 +56,13 @@ NEWLINE		\n
 WHITESPACE	\t|" "
 
 IDENTIFIER	[a-zA-Z_][a-zA-Z_0-9]*
-BAD_IDENTIFIER	[0-9]+([_a-zA-Z]+[_a-zA-Z0-9]*)
 
 COMMENT		(\$\$([^(\$\$)]*(\n?))*\$\$)|(\$[^(\$|\n)]*\$)
 
 %%
 
-{INTEGER}       	{ return INTEGER }
-{DOUBLE}    		{ return DOUBLE }
+{INTEGER}       	{fprintf(yyout, "INTEGER \n"); lineCharacterCount += yyleng; return INTEGER}
+{DOUBLE}    		{fprintf(yyout, "DOUBLE \n"); lineCharacterCount += yyleng; return DOUBLE}
 {BOOLEAN}       	{ fprintf(yyout, "BOOLEAN\n"); lineCharacterCount += yyleng; return BOOLEAN; }
 {CHAR}        		{ fprintf(yyout, "CHAR\n"); lineCharacterCount += yyleng; return CHAR; }
 
@@ -107,7 +106,6 @@ COMMENT		(\$\$([^(\$\$)]*(\n?))*\$\$)|(\$[^(\$|\n)]*\$)
 {INPUT}			{ fprintf(yyout, "INPUT\n"); lineCharacterCount += yyleng; return INPUT; }
 
 {IDENTIFIER}   		{ fprintf(yyout, "IDENTIFIER: %s\n", yytext); lineCharacterCount += yyleng; return IDENTIFIER; }
-{BAD_IDENTIFIER}	{ printf("Error: Invalid identifier %s on line %d, col %d\n", yytext, lineCount + 1, lineCharacterCount + 1); lineCharacterCount += yyleng; return BAD_IDENTIFIER; }
  
 {COMMENT}		{ lineCharacterCount += yyleng; return COMMENT; }
 
@@ -116,7 +114,7 @@ COMMENT		(\$\$([^(\$\$)]*(\n?))*\$\$)|(\$[^(\$|\n)]*\$)
 
 {NEWLINE}       	{ lineCount++; lineCharacterCount = 0; return NEWLINE; }
 {WHITESPACE}    	{ lineCharacterCount += yyleng; return WHITESPACE; }
-.       		{ printf("Error: Unrecognized symbol \"%s\" on line %d, col %d\n", yytext, lineCount + 1, lineCharacterCount + 1); lineCharacterCount += yyleng; return .;}
+.       			{ printf("Error: Unrecognized symbol \"%s\" on line %d, col %d\n", yytext, lineCount + 1, lineCharacterCount + 1); lineCharacterCount += yyleng; return .;}
 %%
 
 int main(int argc, char* argv[]) {
