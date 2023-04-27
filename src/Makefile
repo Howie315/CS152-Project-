@@ -1,3 +1,5 @@
 all:
 		flex lexer.lex
-		gcc -o lexer lex.yy.c -lfl
+		bison -d -t parser.y
+		gcc lex.yy.c parser.tab.c
+		
