@@ -45,33 +45,55 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    EOL = 258,
-    INTEGER_TOKEN = 259,
-    DECIMAL_TOKEN = 260,
-    PLUS = 261,
-    MINUS = 262,
-    MULTI = 263,
-    DIVIDE = 264,
-    OPENP = 265,
-    CLOSEP = 266
+    INTEGER = 258,
+    DOUBLE = 259,
+    BOOLEAN = 260,
+    CHAR = 261,
+    ASSIGN = 262,
+    ADD = 263,
+    SUB = 264,
+    DIV = 265,
+    MUL = 266,
+    MOD = 267,
+    EQ = 268,
+    LT = 269,
+    LTE = 270,
+    GT = 271,
+    GTE = 272,
+    NE = 273,
+    FUNCTION = 274,
+    BEGINSCOPE = 275,
+    ENDSCOPE = 276,
+    BEGINPARAM = 277,
+    ENDPARAM = 278,
+    BEGINBRACKET = 279,
+    ENDBRACKET = 280,
+    IF = 281,
+    ELSE = 282,
+    FOR = 283,
+    WHILE = 284,
+    CONTINUE = 285,
+    BREAK = 286,
+    TRUE = 287,
+    FALSE = 288,
+    RETURN = 289,
+    VOID = 290,
+    NOT = 291,
+    AND = 292,
+    OR = 293,
+    SEMICOLON = 294,
+    COMMA = 295,
+    OUTPUT = 296,
+    INPUT = 297,
+    IDENTIFIER = 298,
+    NUMBER = 299,
+    DECIMAL = 300
   };
 #endif
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-
-union YYSTYPE
-{
-#line 10 "parser.y" /* yacc.c:1909  */
-
-  int		int_val;
-  float dec_val;
-  char  sym;
-
-#line 72 "parser.tab.h" /* yacc.c:1909  */
-};
-
-typedef union YYSTYPE YYSTYPE;
+typedef int YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif

@@ -1,66 +1,173 @@
 %{
-
 #include <stdio.h>
-
 int yylex();
 int yyerror(char *s);
-
 %}
 
-%union{
-  int		int_val;
-  float dec_val;
-  char  sym;
-}
+%token INTEGER DOUBLE BOOLEAN CHAR
+%token ASSIGN ADD SUB DIV MUL MOD EQ LT LTE GT GTE NE
+%token FUNCTION BEGINSCOPE ENDSCOPE BEGINPARAM ENDPARAM BEGINBRACKET ENDBRACKET IF ELSE FOR WHILE CONTINUE BREAK TRUE FALSE RETURN VOID NOT AND OR SEMICOLON COMMA
+%token OUTPUT INPUT
+%token IDENTIFIER NUMBER DECIMAL
 
-%token EOL
-%token<int_val> INTEGER_TOKEN
-%token<dec_val> DECIMAL_TOKEN
-%token<sym>     PLUS
-%token<sym>     MINUS
-%token<sym>     MULTI
-%token<sym>     DIVIDE
-%left     OPENP CLOSEP
-   
-
-%type<int_val> exp
-%type<int_val> term
-%type<int_val> factor
+%start prog_start
 
 
-%start input
 
+%error-verbose
 
 
 %%
-
-input:
-|   line input
+prog_start:
+      functions { printf("prog_start -> functions\n"); }
+|     %empty    { printf("prog_start -> epsilon\n"); }
 ;
 
-line:
-  exp EOL { printf("%d\n", $1); }
-| EOL
+functions: 
+      function            { printf("functions -> function\n"); }
+|     function functions  { printf("functions -> function functions\n"); }
 ;
 
-exp: 
-    term           { $$ = $1; }
-|   term PLUS exp { $$ = $1 + $3; }
-|   term MINUS exp { $$ = $1 - $3; }
+function:
+      type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE      { printf("function -> type FUNC IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINBRACKET statements ENDBRACKET\n"); }
+|     type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM SEMICOLON                           { printf("function -> type FUNC IDENTIFIER BEGINPARAM arguements ENDPARAM SEMICOLON\n"); }
 ;
 
-term: 
-    factor          { $$ = $1; }
-|   factor MULTI term { $$ = $1 * $3; }
-|   factor DIVIDE term { $$ = $1 / $3; }
+arguements:
+      arguement repeat_arguements { printf("arguements -> arguement repeat_arguements\n"); }
+|     %empty                      { printf("arguements -> epsilon\n"); }
 ;
 
-factor:
-    OPENP exp CLOSEP
-|   INTEGER_TOKEN
+repeat_arguements:
+      COMMA arguement repeat_arguements { printf("repeat_arguements -> COMMA arguement repeat_arguements\n"); }
+|     %empty                            { printf("repeat_arguements -> epsilon\n"); }
 ;
 
+arguement: 
+      type IDENTIFIER { printf("arguement -> type IDENTIFIER\n"); }
+;
 
+type:
+      VOID      { printf("type -> VOID\n\n"); }
+|     INTEGER   { printf("type -> INTEGER\n\n"); }
+|     BOOLEAN   { printf("type -> BOOLEAN\n\n"); }
+|     DOUBLE    { printf("type -> DOUBLE\n\n"); }
+|     CHAR      { printf("type -> CHAR\n\n"); }
+;
+
+statements:
+      statement SEMICOLON statements  { printf("statements -> statement SEMICOLON statements\n"); }
+|     %empty                          { printf("statements -> epsilon\n"); }
+;
+
+statement: 
+      returnstmt    { printf("statement -> returnstmt\n"); }
+|     ifstmt        { printf("statement -> ifstmt\n"); }
+|     assignment    { printf("statement -> assignment\n"); }
+|     functioncall  { printf("statement -> functioncall\n"); }
+|     declaration   { printf("statement -> declaration\n"); }
+|     whilestmt     { printf("statement -> whilestmt\n"); }
+;
+
+whilestmt: 
+      WHILE BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET\n"); }
+;
+
+returnstmt: 
+      RETURN expression { printf("returnstmt -> expression\n"); }
+;
+
+ifstmt: 
+      IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET                                          { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET\n"); }
+|     IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET ELSE BEGINBRACKET statements ENDBRACKET  { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET ELSE BEGINBRACKET statements ENDBRACKET\n"); }
+;
+
+assignment: 
+      IDENTIFIER ASSIGN expression    { printf("assignment -> IDENTIFIER ASSIGN expression\n"); }
+|     IDENTIFIER ASSIGN functioncall  { printf("assignment -> IDENTIFIER ASSIGN functioncall\n"); }
+;
+
+functioncall:
+      IDENTIFIER BEGINPARAM passingargs ENDPARAM { printf("functioncall -> IDENTIFIER BEGINBRACKET passingargs ENDPARAM\n"); }
+;
+
+passingargs:
+      expression repeat_passingargs   { printf("passingargs -> IDENTIFIER repeat_passingargs\n"); }
+|     %empty                          {printf("passingargs -> epsilon"); }
+
+repeat_passingargs:
+      COMMA expression repeat_arguements    { printf("repeat_passingargs -> COMMA IDENTIFIER repeat_passingargs\n"); }
+|     %empty                                { printf("repeat_passingargs -> epsilon\n"); }
+
+declaration:
+      type IDENTIFIER { printf("declaration -> type IDENTIFIER\n"); }
+
+expression:
+      assignexp { printf("expression -> assignexp\n"); }
+;
+
+assignexp:
+      logicexp logicop assignexp  { printf("assignexp -> logicexp logicop assignexp\n"); }
+|     logicexp                    { printf("assignexp -> logicexp\n"); }
+;
+
+logicop:
+      AND { printf("logicop -> AND\n\n"); }
+|     OR  { printf("logicop -> OR\n\n"); }
+;
+
+logicexp:
+      equalityexp eqop logicexp   { printf("logicexp -> equalityexp eqop logicexp\n"); }
+|     equalityexp                 { printf("logicexp -> equalityexp\n"); }
+;
+
+equalityexp:
+      relationexp relop equalityexp { printf("equalityexp -> relationexp relop equalityexp\n"); }
+|     relationexp                   { printf("equalityexp -> relationexp\n"); }
+;
+
+eqop:
+      EQ  { printf("eqop -> EQ\n\n"); }
+|     NE  { printf("eqop -> NE\n\n"); }
+;
+
+relop:
+      LT {printf("relop -> LT\n\n");}
+|     LTE {printf("relop -> LTE\n\n");}
+|     GT {printf("relop -> GT\n\n");}
+|     GTE{printf("relop -> GTE\n\n");}
+;
+
+relationexp:
+      addexp addop relationexp {printf("relationexp -> addexp addop relationexp\n");}
+|     addexp {printf("relationexp -> addexp\n");}
+;
+
+addop:
+      ADD {printf("addop -> ADD\n\n");}
+|     SUB {printf("addop -> SUB\n\n");}
+;
+
+addexp:
+      multexp multop addexp {printf("addexp -> multexp multop addexp\n");}
+|     multexp {printf("addexp -> multexp\n");}
+;
+
+multop:
+      MUL   {printf("multop -> MUL\n\n");}
+|     DIV   {printf("multop -> DIV\n\n");}
+|     MOD   {printf("multop -> MOD\n\n");}
+;
+multexp: 
+      NOT term {printf("multexp -> NOT term\n");}
+|     term  {printf("multexp -> term\n");}
+;
+
+term:
+      BEGINPARAM expression ENDPARAM {printf("term -> BEGINPARAM expression ENDPARAM\n\n");}
+|     NUMBER      {printf("term -> NUMBER\n\n");}
+|     IDENTIFIER  {printf("term -> IDENTIFIER\n\n");}
+; 
 %%
 
 int main()
