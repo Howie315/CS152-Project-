@@ -17,10 +17,6 @@ void func main()
 
   a = 100;
   b = 50;
-
-  int e[10];
-
-  e[0] = 1;
   
   c = add(a, b);
   defecate(c);

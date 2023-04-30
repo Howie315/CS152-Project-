@@ -34,8 +34,13 @@ function:
 ;
 
 io:
-      INPUT { printf("io -> INPUT"); }
-|     OUTPUT { printf("io -> OUTPUT"); }
+      INPUT BEGINPARAM ref ENDPARAM{ printf("io -> INPUT BEGINPARAM ref ENDPARAM\n"); }
+|     OUTPUT BEGINPARAM ref ENDPARAM{ printf("io -> INPUT BEGINPARAM ref ENDPARAM\n"); }
+;
+
+ref:
+      IDENTIFIER        { printf("ref -> IDENTIFIER"); }
+|     IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET { printf("ref -> IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET\n"); }
 ;
 
 arguements:
@@ -73,11 +78,11 @@ statement:
 |     functioncall  { printf("statement -> functioncall\n"); }
 |     declaration   { printf("statement -> declaration\n"); }
 |     whilestmt     { printf("statement -> whilestmt\n"); }
-|     io BEGINPARAM IDENTIFIER ENDPARAM            { printf("function -> io BEGINPARAM arguement ENDPARAM SEMICOLON\n"); }
+|     io            { printf("statement -> io\n"); }
 ;
 
 whilestmt: 
-      WHILE BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET\n"); }
+      WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET\n"); }
 ;
 
 returnstmt: 
@@ -85,8 +90,8 @@ returnstmt:
 ;
 
 ifstmt: 
-      IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET                                          { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET\n"); }
-|     IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET ELSE BEGINBRACKET statements ENDBRACKET  { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET ELSE BEGINBRACKET statements ENDBRACKET\n"); }
+      IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE                                          { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET\n"); }
+|     IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE  { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE\n"); }
 ;
 
 assignment: 
@@ -101,7 +106,7 @@ functioncall:
 
 passingargs:
       expression repeat_passingargs   { printf("passingargs -> IDENTIFIER repeat_passingargs\n"); }
-|     %empty                          {printf("passingargs -> epsilon"); }
+|     %empty                          {printf("passingargs -> epsilon\n"); }
 
 repeat_passingargs:
       COMMA expression repeat_arguements    { printf("repeat_passingargs -> COMMA IDENTIFIER repeat_passingargs\n"); }
@@ -109,7 +114,10 @@ repeat_passingargs:
 
 declaration:
       type IDENTIFIER { printf("declaration -> type IDENTIFIER\n"); }
+|     type assignment { printf("declaration -> type assignmentR\n"); }
 |     type array      { printf("declaration -> type array\n"); }
+;
+
 
 array:
       IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET { printf("array -> IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET\n"); }
@@ -133,14 +141,14 @@ logicexp:
 |     equalityexp                 { printf("logicexp -> equalityexp\n"); }
 ;
 
-equalityexp:
-      relationexp relop equalityexp { printf("equalityexp -> relationexp relop equalityexp\n"); }
-|     relationexp                   { printf("equalityexp -> relationexp\n"); }
-;
-
 eqop:
       EQ  { printf("eqop -> EQ\n\n"); }
 |     NE  { printf("eqop -> NE\n\n"); }
+;
+
+equalityexp:
+      relationexp relop equalityexp { printf("equalityexp -> relationexp relop equalityexp\n"); }
+|     relationexp                   { printf("equalityexp -> relationexp\n"); }
 ;
 
 relop:
@@ -178,7 +186,7 @@ multexp:
 term:
       BEGINPARAM expression ENDPARAM {printf("term -> BEGINPARAM expression ENDPARAM\n\n");}
 |     NUMBER      {printf("term -> NUMBER\n\n");}
-|     IDENTIFIER  {printf("term -> IDENTIFIER\n\n");}
+|     ref  {printf("term -> ref\n");}
 ; 
 %%
 
