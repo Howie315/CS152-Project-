@@ -1002,7 +1002,7 @@ YY_RULE_SETUP
 case 41:
 YY_RULE_SETUP
 #line 110 "lexer.lex"
-{ printf("IDENTIFIER\n"); lineCharacterCount += yyleng; return IDENTIFIER; }
+{ lineCharacterCount += yyleng; return IDENTIFIER; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
@@ -1023,13 +1023,13 @@ case 45:
 /* rule 45 can match eol */
 YY_RULE_SETUP
 #line 116 "lexer.lex"
-{ printf("COMMENT\n"); lineCharacterCount += yyleng; }
+{ lineCharacterCount += yyleng; }
 	YY_BREAK
 case 46:
 /* rule 46 can match eol */
 YY_RULE_SETUP
 #line 118 "lexer.lex"
-{ printf("NEWLINE\n"); lineCount++; lineCharacterCount = 0;}
+{ lineCount++; lineCharacterCount = 0;}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
