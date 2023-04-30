@@ -1,18 +1,21 @@
 void func main() {
     int m;
-    int n;
+    int n = 7;
     int o;
+   
+   
     
-    $ main program $
+    intake(input);
     
-    n = intake();
-    
-    if (n >= 100) {
+    if (n >= 100) 
+    {
         defecate(n);
-    } else {
+    } 
+    else 
+    {
         m = n - 1;
         defecate(m);
-    }
+    };
     
     defecate(o);
 }
