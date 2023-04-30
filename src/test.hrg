@@ -47,7 +47,9 @@ void func main()
   int e[10];
 
   e[0] = 1;
-  
+
+  intake(input);
+
   c = add(a, b);
   defecate(c);
   

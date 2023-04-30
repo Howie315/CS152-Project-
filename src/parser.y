@@ -10,6 +10,7 @@ int yyerror(char *s);
 %token OUTPUT INPUT
 %token IDENTIFIER NUMBER DECIMAL
 
+
 %start prog_start
 
 
@@ -74,10 +75,33 @@ statement:
 |     declaration   { printf("statement -> declaration\n"); }
 |     whilestmt     { printf("statement -> whilestmt\n"); }
 |     io BEGINPARAM IDENTIFIER ENDPARAM            { printf("function -> io BEGINPARAM arguement ENDPARAM SEMICOLON\n"); }
+|     continuestmt        { printf("statement -> continuestmt\n"); }
+|     breakstmt           { printf("statement -> breakstmt\n"); }
 ;
 
-whilestmt: 
-      WHILE BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET\n"); }
+whilestmt:
+    WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE 
+        { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE\n"); }
+    | WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements continuestmt ENDSCOPE 
+        { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements continuestmt ENDSCOPE\n"); }
+    | WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements breakstmt ENDSCOPE 
+        { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements breakstmt ENDSCOPE\n"); }
+    | WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE whilestmts ENDSCOPE 
+        { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE whilestmts ENDSCOPE\n"); }
+;
+
+whilestmts:
+whilestmt
+| whilestmts whilestmt
+;
+
+
+continuestmt:
+   CONTINUE { printf("continuestmt -> CONTINUE\n"); }
+;
+
+breakstmt:
+   BREAK { printf("breakstmt -> BREAK\n"); }
 ;
 
 returnstmt: 
@@ -85,8 +109,8 @@ returnstmt:
 ;
 
 ifstmt: 
-      IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET                                          { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET\n"); }
-|     IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET ELSE BEGINBRACKET statements ENDBRACKET  { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINBRACKET statements ENDBRACKET ELSE BEGINBRACKET statements ENDBRACKET\n"); }
+      IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE                                       { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE\n"); }
+|     IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE  { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE\n"); }
 ;
 
 assignment: 
@@ -101,7 +125,7 @@ functioncall:
 
 passingargs:
       expression repeat_passingargs   { printf("passingargs -> IDENTIFIER repeat_passingargs\n"); }
-|     %empty                          {printf("passingargs -> epsilon"); }
+|     %empty                          {printf("passingargs -> epsilon\n"); }
 
 repeat_passingargs:
       COMMA expression repeat_arguements    { printf("repeat_passingargs -> COMMA IDENTIFIER repeat_passingargs\n"); }
@@ -109,6 +133,7 @@ repeat_passingargs:
 
 declaration:
       type IDENTIFIER { printf("declaration -> type IDENTIFIER\n"); }
+|     type assignment  { printf("declaration -> type assignment\n"); }
 |     type array      { printf("declaration -> type array\n"); }
 
 array:
