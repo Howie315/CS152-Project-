@@ -80,19 +80,15 @@ statement:
 ;
 
 whilestmt:
-    WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE 
-        { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE\n"); }
-    | WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements continuestmt ENDSCOPE 
-        { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements continuestmt ENDSCOPE\n"); }
-    | WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements breakstmt ENDSCOPE 
-        { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements breakstmt ENDSCOPE\n"); }
-    | WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE whilestmts ENDSCOPE 
-        { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE whilestmts ENDSCOPE\n"); }
+     WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE\n"); }
+|    WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements continuestmt ENDSCOPE { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements continuestmt ENDSCOPE\n"); }
+|    WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements breakstmt ENDSCOPE  { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements breakstmt ENDSCOPE\n"); }
+|    WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE whilestmts ENDSCOPE { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE whilestmts ENDSCOPE\n"); }
 ;
 
 whilestmts:
-whilestmt
-| whilestmts whilestmt
+      whilestmt
+|     whilestmts whilestmt
 ;
 
 
@@ -108,10 +104,20 @@ returnstmt:
       RETURN expression { printf("returnstmt -> expression\n"); }
 ;
 
-ifstmt: 
-      IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE                                       { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE\n"); }
-|     IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE  { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE\n"); }
+
+
+ifstmt:
+      IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE\n"); }
+|     IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE\n"); }
+|     IF BEGINPARAM expression ENDPARAM BEGINSCOPE ifstmts ENDSCOPE { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINSCOPE ifstmt ENDSCOPE\n"); }
+|     IF BEGINPARAM expression ENDPARAM BEGINSCOPE ifstmts ENDSCOPE ELSE BEGINSCOPE ifstmt ENDSCOPE { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINSCOPE ifstmt ENDSCOPE ELSE BEGINSCOPE ifstmt ENDSCOPE\n"); }
 ;
+
+ifstmts:
+      ifstmt
+|     ifstmts ifstmt
+;
+
 
 assignment: 
       IDENTIFIER ASSIGN expression    { printf("assignment -> IDENTIFIER ASSIGN expression\n"); }
