@@ -35,8 +35,13 @@ function:
 ;
 
 io:
-      INPUT { printf("io -> INPUT"); }
-|     OUTPUT { printf("io -> OUTPUT"); }
+      INPUT BEGINPARAM ref ENDPARAM{ printf("io -> INPUT BEGINPARAM ref ENDPARAM\n"); }
+|     OUTPUT BEGINPARAM ref ENDPARAM{ printf("io -> INPUT BEGINPARAM ref ENDPARAM\n"); }
+;
+
+ref:
+      IDENTIFIER        { printf("ref -> IDENTIFIER"); }
+|     IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET { printf("ref -> IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET\n"); }
 ;
 
 arguements:
@@ -74,7 +79,7 @@ statement:
 |     functioncall  { printf("statement -> functioncall\n"); }
 |     declaration   { printf("statement -> declaration\n"); }
 |     whilestmt     { printf("statement -> whilestmt\n"); }
-|     io BEGINPARAM IDENTIFIER ENDPARAM            { printf("function -> io BEGINPARAM arguement ENDPARAM SEMICOLON\n"); }
+|     io            { printf("statement -> io\n"); }
 |     continuestmt        { printf("statement -> continuestmt\n"); }
 |     breakstmt           { printf("statement -> breakstmt\n"); }
 ;
@@ -131,7 +136,7 @@ functioncall:
 
 passingargs:
       expression repeat_passingargs   { printf("passingargs -> IDENTIFIER repeat_passingargs\n"); }
-|     %empty                          {printf("passingargs -> epsilon\n"); }
+|     %empty                          {printf("passingargs -> epsilon\n\n"); }
 
 repeat_passingargs:
       COMMA expression repeat_arguements    { printf("repeat_passingargs -> COMMA IDENTIFIER repeat_passingargs\n"); }
@@ -141,6 +146,8 @@ declaration:
       type IDENTIFIER { printf("declaration -> type IDENTIFIER\n"); }
 |     type assignment  { printf("declaration -> type assignment\n"); }
 |     type array      { printf("declaration -> type array\n"); }
+;
+
 
 array:
       IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET { printf("array -> IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET\n"); }
@@ -164,14 +171,14 @@ logicexp:
 |     equalityexp                 { printf("logicexp -> equalityexp\n"); }
 ;
 
-equalityexp:
-      relationexp relop equalityexp { printf("equalityexp -> relationexp relop equalityexp\n"); }
-|     relationexp                   { printf("equalityexp -> relationexp\n"); }
-;
-
 eqop:
       EQ  { printf("eqop -> EQ\n\n"); }
 |     NE  { printf("eqop -> NE\n\n"); }
+;
+
+equalityexp:
+      relationexp relop equalityexp { printf("equalityexp -> relationexp relop equalityexp\n"); }
+|     relationexp                   { printf("equalityexp -> relationexp\n"); }
 ;
 
 relop:
@@ -209,7 +216,7 @@ multexp:
 term:
       BEGINPARAM expression ENDPARAM {printf("term -> BEGINPARAM expression ENDPARAM\n\n");}
 |     NUMBER      {printf("term -> NUMBER\n\n");}
-|     IDENTIFIER  {printf("term -> IDENTIFIER\n\n");}
+|     ref  {printf("term -> ref\n");}
 ; 
 %%
 
