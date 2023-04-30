@@ -16,11 +16,15 @@ void func main()
   int d;
 
   a = 100;
-  b = 50
+  b = 50;
+
+  int e[10];
+
+  e[0] = 1;
   
   c = add(a, b);
-  // defecate(c);
+  defecate(c);
   
   d = mult(c, a + b);
-  // defecate(d);
+  defecate(d);
 }

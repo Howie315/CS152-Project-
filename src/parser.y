@@ -30,7 +30,12 @@ functions:
 
 function:
       type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE      { printf("function -> type FUNC IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINBRACKET statements ENDBRACKET\n"); }
-|     type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM SEMICOLON                           { printf("function -> type FUNC IDENTIFIER BEGINPARAM arguements ENDPARAM SEMICOLON\n"); }
+|     type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM SEMICOLON                           { printf("function -> type FUNC IDENTIFIER BEGINPARAM arguements ENDPARAM SEMICOLON\n"); } 
+;
+
+io:
+      INPUT { printf("io -> INPUT"); }
+|     OUTPUT { printf("io -> OUTPUT"); }
 ;
 
 arguements:
@@ -45,6 +50,7 @@ repeat_arguements:
 
 arguement: 
       type IDENTIFIER { printf("arguement -> type IDENTIFIER\n"); }
+|     type array { printf("arguement -> array\n");}
 ;
 
 type:
@@ -67,6 +73,7 @@ statement:
 |     functioncall  { printf("statement -> functioncall\n"); }
 |     declaration   { printf("statement -> declaration\n"); }
 |     whilestmt     { printf("statement -> whilestmt\n"); }
+|     io BEGINPARAM IDENTIFIER ENDPARAM            { printf("function -> io BEGINPARAM arguement ENDPARAM SEMICOLON\n"); }
 ;
 
 whilestmt: 
@@ -84,6 +91,7 @@ ifstmt:
 
 assignment: 
       IDENTIFIER ASSIGN expression    { printf("assignment -> IDENTIFIER ASSIGN expression\n"); }
+|     array ASSIGN expression         { printf("assignment -> array ASSIGN expression\n"); }
 |     IDENTIFIER ASSIGN functioncall  { printf("assignment -> IDENTIFIER ASSIGN functioncall\n"); }
 ;
 
@@ -101,6 +109,10 @@ repeat_passingargs:
 
 declaration:
       type IDENTIFIER { printf("declaration -> type IDENTIFIER\n"); }
+|     type array      { printf("declaration -> type array\n"); }
+
+array:
+      IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET { printf("array -> IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET\n"); }
 
 expression:
       assignexp { printf("expression -> assignexp\n"); }
