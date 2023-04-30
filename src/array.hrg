@@ -18,6 +18,6 @@ void func main(){
     defecate(a[2]); 
 
     a[3] = a[0] * 2;
-    defecate(a[3]) 
+    defecate(a[3]); 
 
 }

@@ -36,7 +36,7 @@ function:
 
 io:
       INPUT BEGINPARAM ref ENDPARAM{ printf("io -> INPUT BEGINPARAM ref ENDPARAM\n"); }
-|     OUTPUT BEGINPARAM ref ENDPARAM{ printf("io -> INPUT BEGINPARAM ref ENDPARAM\n"); }
+|     OUTPUT BEGINPARAM ref ENDPARAM{ printf("io -> OUTPUT BEGINPARAM ref ENDPARAM\n"); }
 ;
 
 ref:
