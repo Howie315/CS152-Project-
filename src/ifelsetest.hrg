@@ -10,6 +10,15 @@ void func main() {
     if (n >= 100) 
     {
         defecate(n);
+
+        if(n := 100)
+        {
+            defecate(n);
+        }
+        else
+        {
+            defecate(n);
+        };
     } 
     else 
     {
