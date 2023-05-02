@@ -5,24 +5,24 @@ void func main() {
 	int j;
 	int x;
 	int sqrt_n;
-	$ compute the square root of n and put the result in sqrt_n $
+	// compute the square root of n and put the result in sqrt_n 
 	n = intake();
 	x = n;
 	while (x > n / x) {
 		x = (x+n/x)/2;
 	}
 	sqrt_n = x;
-	$ initialization of the array $
+	// initialization of the array 
 	i = 2;
 	while (i <= n) {
 		a[i] = 0;
 		i = i + 1;
 	}
-	$ make the array $
+	// make the array 
 	i = 2;
 	while (i <= sqrt_n) {
 		if (a[i] := 0) {
-			$ i prime, so eliminate its multiples $
+			// i prime, so eliminate its multiples 
 			j = i+i;
 			while (j <= n) {
 				a[j] = 1;
@@ -31,11 +31,11 @@ void func main() {
 		}
 		i = i + 1;
 	}
-	$ print primes $
+	// print primes 
 	i = 2;
 	while (i <= n) {
-		if (a[i] == 0) {
-			write i;
+		if (a[i] := 0) {
+			defecate(i);
 		}
 		i = i + 1;
 	}
