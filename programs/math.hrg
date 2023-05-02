@@ -7,30 +7,30 @@
     b = 4;
 
 
-    $ Addition $
+    // Addition 
     c = a + b;
-    defecate(c) $print out 19$
+    defecate(c); // print out 19 
     
-    $ Subtraction $
+    // Subtraction 
     c = a - b; 
-    defecate(c) $ print out 11 $
+    defecate(c); // print out 11 
 
-    $ Multiplication $
+    // Multiplication 
     c = a * b; 
-    defecate(c) $ print out 60 $
+    defecate(c); // print out 60 
 
-    $ Division $
+    // Division 
     c = a / b; 
-    defecate(c) $ print out 3 $
+    defecate(c); // print out 3 
 
-    $ Modulus $
-    c = a % b; $ 
-    defecate(c) $ print out 3$
+    // Modulus 
+    c = a % b; 
+    defecate(c); // print out 3
 
-    $ 'Complex' Expression $
+    // 'Complex' Expression 
     a = 4;
     b = 2;
     c = (a + b) / 2;
 
-    defecate(c) $ print out 3$
+    defecate(c); // print out 3
 }   

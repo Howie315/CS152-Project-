@@ -9,5 +9,5 @@ void func main()
     {
         i = i + 1;
         defecate(i);
-    };
+    }
 }

@@ -16,7 +16,7 @@ void func main()
   int d;
 
   a = 100;
-  b = 50
+  b = 50;
   
   c = add(a, b);
   defecate(c);
