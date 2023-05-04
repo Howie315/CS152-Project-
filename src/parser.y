@@ -2,6 +2,7 @@
 #include <stdio.h>
 int yylex();
 int yyerror(const char *s);
+extern int lineCount;
 %}
 
 %token INTEGER DOUBLE BOOLEAN CHAR
@@ -215,6 +216,7 @@ int main()
 
 yyerror(const char* s)
 {
-  printf("ERROR: %s\n", s);
+  printf("ERROR on line %d: %s\n", lineCount + 1, s);
+
   return 0;
 }
