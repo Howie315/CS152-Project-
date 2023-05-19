@@ -1,15 +1,105 @@
 %{
-#include <stdio.h>
-int yylex();
-int yyerror(const char *s);
+#include "codenode.h"
+extern int yylex(void);
+void yyerror(const char *msg);
 extern int lineCount;
+
+char *identToken;
+int numberToken;
+int  count_names = 0;
+
+enum Type { Integer, Array };
+
+struct Symbol {
+  std::string name;
+  Type type;
+};
+
+struct Function {
+  std::string name;
+  std::vector<Symbol> declarations;
+};
+
+std::vector <Function> symbol_table;
+
+// remember that Bison is a bottom up parser: that it parses leaf nodes first before
+// parsing the parent nodes. So control flow begins at the leaf grammar nodes
+// and propagates up to the parents.
+Function *get_function() {
+  int last = symbol_table.size()-1;
+  if (last < 0) {
+    printf("***Error. Attempt to call get_function with an empty symbol table\n");
+    printf("Create a 'Function' object using 'add_function_to_symbol_table' before\n");
+    printf("calling 'find' or 'add_variable_to_symbol_table'");
+  }
+  return &symbol_table[last];
+}
+
+// find a particular variable using the symbol table.
+// grab the most recent function, and linear search to
+// find the symbol you are looking for.
+// you may want to extend "find" to handle different types of "Integer" vs "Array"
+bool find(std::string &value) {
+  Function *f = get_function();
+  for(int i=0; i < f->declarations.size(); i++) {
+    Symbol *s = &f->declarations[i];
+    if (s->name == value) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// when you see a function declaration inside the grammar, add
+// the function name to the symbol table
+void add_function_to_symbol_table(std::string &value) {
+  Function f; 
+  f.name = value; 
+  symbol_table.push_back(f);
+}
+
+// when you see a symbol declaration inside the grammar, add
+// the symbol name as well as some type information to the symbol table
+void add_variable_to_symbol_table(std::string &value, Type t) {
+  Symbol s;
+  s.name = value;
+  s.type = t;
+  Function *f = get_function();
+  f->declarations.push_back(s);
+}
+
+// a function to print out the symbol table to the screen
+// largely for debugging purposes.
+void print_symbol_table(void) {
+  printf("symbol table:\n");
+  printf("--------------------\n");
+  for(int i=0; i<symbol_table.size(); i++) {
+    printf("function: %s\n", symbol_table[i].name.c_str());
+    for(int j=0; j<symbol_table[i].declarations.size(); j++) {
+      printf("  locals: %s\n", symbol_table[i].declarations[j].name.c_str());
+    }
+  }
+  printf("--------------------\n");
+}
+
+
 %}
 
+%union {
+  char *op_val;
+  struct CodeNode *code_node;
+  int int_val;
+}
+
 %token INTEGER DOUBLE BOOLEAN CHAR
-%token ASSIGN ADD SUB DIV MUL MOD EQ LT LTE GT GTE NE
+%token ASSIGN ADD SUB DIV MUL MOD 
 %token FUNCTION BEGINSCOPE ENDSCOPE BEGINPARAM ENDPARAM BEGINBRACKET ENDBRACKET IF ELSE FOR WHILE CONTINUE BREAK TRUE FALSE RETURN VOID NOT AND OR SEMICOLON COMMA
 %token OUTPUT INPUT
-%token IDENTIFIER NUMBER DECIMAL
+%token NUMBER DECIMAL
+
+%token <op_val> EQ LT LTE GT GTE NE IDENTIFIER
+
+%type <code_node> relop ref expression
 
 
 %start prog_start
@@ -121,18 +211,40 @@ repeat_passingargs:
 |     %empty                                    { printf("repeat_passingargs -> epsilon\n"); }
 
 declaration:
-      type IDENTIFIER                           { printf("declaration -> type IDENTIFIER\n"); }
+      type IDENTIFIER                           
+      {
+
+      }
 |     type assignment                           { printf("declaration -> type assignment\n"); }
 |     type array                                { printf("declaration -> type array\n"); }
 ;
 
 io:
       INPUT BEGINPARAM ENDPARAM                 { printf("io -> INPUT BEGINPARAM ref ENDPARAM\n"); }
-|     OUTPUT BEGINPARAM ref ENDPARAM            { printf("io -> OUTPUT BEGINPARAM ref ENDPARAM\n"); }
+|     OUTPUT BEGINPARAM ref ENDPARAM            
+      {
+            CodeNode *node = new CodeNode;
+            CodeNode *ref_node = ref;
+
+            node->code = "";
+            node->code += ".> ";
+            node->code += ref->code;
+            $$ = node;
+
+            // .> IDENTIFIER
+            // .< IDENTIFIER   
+
+      }
 ;
 
 ref:
-      IDENTIFIER                                { printf("ref -> IDENTIFIER"); }
+      IDENTIFIER                                
+      {
+            CodeNode *node = new CodeNode;
+            node->name = $1;
+            node->code = $1;
+            $$ = node;
+      }
 |     array                                     { printf("ref -> array\n"); }
 ;
 
@@ -170,10 +282,30 @@ equalityexp:
 ;
 
 relop:
-      LT                                  {printf("relop -> LT\n");}
-|     LTE                                 {printf("relop -> LTE\n");}
-|     GT                                  {printf("relop -> GT\n");}
-|     GTE                                 {printf("relop -> GTE\n");}
+      LT                                  
+      {
+            CodeNode *node = new CodeNode;
+            node->code = $1;
+            $$ = node;
+      }
+|     LTE
+      {
+            CodeNode *node = new CodeNode;
+            node->code = $1;
+            $$ = node;
+      }
+|     GT                                  
+      {
+            CodeNode *node = new CodeNode;
+            node->code = $1;
+            $$ = node;
+      }
+|     GTE
+      {
+            CodeNode *node = new CodeNode;
+            node->code = $1;
+            $$ = node;
+      }
 ;
 
 relationexp:
@@ -197,26 +329,45 @@ multop:
 |     MOD                                 {printf("multop -> MOD\n");}
 ;
 multexp: 
-      NOT term                            {printf("multexp -> NOT term\n");}
+      NOT term                            
+      {     
+            printf("multexp -> NOT term\n");
+      }
 |     term                                {printf("multexp -> term\n");}
 ;
 
 term:
-      BEGINPARAM expression ENDPARAM      {printf("term -> BEGINPARAM expression ENDPARAM\n");}
-|     NUMBER                              {printf("term -> NUMBER\n");}
-|     ref                                 {printf("term -> ref\n");}
+      BEGINPARAM expression ENDPARAM      
+      {
+            //    NOT DONE
+      }
+|     NUMBER                              
+      {
+            CodeNode *node = new CodeNode;
+            node->name = $1;
+            node->code = $1;
+            $$ = node;
+      }
+|     ref
+      {
+            //    NOT DONE
+            CodeNode *node = new CodeNode;
+            node->name = $1;
+            node->code = $1;
+            $$ = node;
+      }
 ; 
 %%
 
-int main()
+int main(int argc, char **argv)
 {
-  yyparse();
-  return 0;
+   yyparse();
+   print_symbol_table();
+   return 0;
 }
 
-yyerror(const char* s)
+void yyerror(const char *msg)
 {
-  printf("ERROR on line %d: %s\n", lineCount + 1, s);
-
-  return 0;
+   printf("** Line %d: %s\n", lineCount, msg);
+   exit(1);
 }
