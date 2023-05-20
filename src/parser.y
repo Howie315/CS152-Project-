@@ -39,11 +39,11 @@ Function *get_function() {
 // grab the most recent function, and linear search to
 // find the symbol you are looking for.
 // you may want to extend "find" to handle different types of "Integer" vs "Array"
-bool find(std::string &value) {
+bool find(std::string &value, Type t) {
   Function *f = get_function();
   for(int i=0; i < f->declarations.size(); i++) {
     Symbol *s = &f->declarations[i];
-    if (s->name == value) {
+    if (s->name == value && s->type == t) {
       return true;
     }
   }
@@ -89,6 +89,7 @@ void print_symbol_table(void) {
   char *op_val;
   struct CodeNode *code_node;
   int int_val;
+  Type type_node;
 }
 
 %token INTEGER DOUBLE BOOLEAN CHAR
@@ -100,6 +101,7 @@ void print_symbol_table(void) {
 %token <op_val> EQ LT LTE GT GTE NE IDENTIFIER
 
 %type <code_node> relop ref expression
+%type <type_node> type
 
 
 %start prog_start
@@ -111,23 +113,83 @@ void print_symbol_table(void) {
 
 %%
 prog_start:
-      functions { printf("prog_start -> functions\n"); }
-|     %empty    { printf("prog_start -> epsilon\n"); }
+      functions
+      {
+            CodeNode *code_node = $1;
+            printf("%s\n", code_node->code.c_str());
+      }
+|     %empty    { printf("No Content In File!"); }
 ;
 
 functions: 
-      function            { printf("functions -> function\n"); }
-|     function functions  { printf("functions -> function functions\n"); }
+      function
+      {
+              CodeNode *code_node = $1;
+              $$ = code_node
+      }
+|     function functions
+      {
+            //  Concatenate 2 generated ocde nodes together
+            CodeNode *code_node1 = $1;
+            CodeNode *code_node2 = $2;
+            CodeNode *node = new CodeNode;
+            node->code = code_node1->code + code_node2->code;
+            $$ = node;
+      };
 ;
 
 function:
-      type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE      { printf("function -> type FUNC IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINBRACKET statements ENDBRACKET\n"); }
-|     type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM SEMICOLON                           { printf("function -> type FUNC IDENTIFIER BEGINPARAM arguements ENDPARAM SEMICOLON\n"); } 
+      type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE      
+      { 
+            //  Track type of return
+            Type func_type = type;
+
+            //  construct code here
+            CodeNode *function_node = new CodeNode;
+            function_node->code = "";
+            function_node->code += "\nfunc ";
+            function_node->code += std::string($3);
+            function_node->code += "\n";
+            function_node->code += $5->code;  //  Add Args
+            function_node->code += $8->code;  //  Add Function END_BODY
+            function_node->code += "\nendfunc\n\n";
+
+            //  Add function to symbol table here
+            add_function_to_symbol_table(std::string($3));
+
+            //return code 
+            $$ = function_node
+
+
+      }
+|     type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM SEMICOLON                           
+      {
+            // This is the code to CALL an already-made function
+            Type func_type = $1;
+
+            find()
+
+            CodeNode *func_call = new CodeNode;
+            func_call->code = "";
+            func_call->code += "call "
+
+
+      } 
 ;
 
 arguements:
-      arguement repeat_arguements         { printf("arguements -> arguement repeat_arguements\n"); }
-|     %empty                              { printf("arguements -> epsilon\n"); }
+      arguement repeat_arguements         
+      {
+            //    Set arguement node to first
+            CodeNode *arg_node = $1;
+            CodeNode *args = $2;
+
+      }
+|     %empty                              
+      {
+            CodeNode node* = new CodeNode;
+            $$ = node;
+      }
 ;
 
 repeat_arguements:
@@ -141,11 +203,25 @@ arguement:
 ;
 
 type:
-      VOID      { printf("type -> VOID\n"); }
-|     INTEGER   { printf("type -> INTEGER\n"); }
-|     BOOLEAN   { printf("type -> BOOLEAN\n"); }
-|     DOUBLE    { printf("type -> DOUBLE\n"); }
-|     CHAR      { printf("type -> CHAR\n"); }
+      VOID      
+      {
+      }
+|     INTEGER 
+      {
+            $$ = Type::Integer;
+      }
+|     BOOLEAN
+      {
+            $$ = Type::Boolean;
+      }
+|     DOUBLE
+      {
+            $$ = Type::Double;
+      }
+|     CHAR
+      {
+            $$ = Type::Character;
+      }
 ;
 
 statements:
@@ -213,7 +289,17 @@ repeat_passingargs:
 declaration:
       type IDENTIFIER                           
       {
+            // "type" now returns Type of variable
+            CodeNode *node = new CodeNode;
 
+            //    Retreieve Code
+            node->code = $2;
+
+            //    Add to symbol table
+            add_variable_to_symbol_table(node->name, $1);
+
+            //    return
+            $$ = node;
       }
 |     type assignment                           { printf("declaration -> type assignment\n"); }
 |     type array                                { printf("declaration -> type array\n"); }
@@ -250,6 +336,7 @@ ref:
 
 array:
       IDENTIFIER BEGINBRACKET expression ENDBRACKET { printf("array -> IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET\n"); }
+
 ;
 
 expression:
