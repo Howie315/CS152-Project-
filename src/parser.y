@@ -144,34 +144,39 @@ function:
             //  Track type of return
             Type func_type = type;
 
-            //  construct code here
-            CodeNode *function_node = new CodeNode;
-            function_node->code = "";
-            function_node->code += "\nfunc ";
-            function_node->code += std::string($3);
-            function_node->code += "\n";
-            function_node->code += $5->code;  //  Add Args
-            function_node->code += $8->code;  //  Add Function END_BODY
-            function_node->code += "\nendfunc\n\n";
-
             //  Add function to symbol table here
             add_function_to_symbol_table(std::string($3));
 
+            CodeNode *function_node = new CodeNode;
+            function_node->code = "";
+
+            //    Arguements will return a vector or arguements, pass them
+            //    To the function here
+            int i;
+            for(i = 0; i < args.size(); i++)
+            {
+                  func_call->code += std::string(". ");
+                  func_call->code += std::to_string(args.at(i));
+                  func_call->code += std::string("\n");
+            }
+            for(i = 0; i < args.size(); i++)
+            {
+                  func_call->code += std::string("= ");
+                  func_call->code += args.at(i);
+                  func_call->code += std::to_string(i);
+                  func_call->code += std::string("$\n");
+            }
+
+            //  construct code here
+            function_node->code += "func ";
+            function_node->code += std::string($3);
+            function_node->code += "\n";
+            function_node->code += $5->code;  //  Add Args
+            function_node->code += $8->code;  //  Add statements
+            function_node->code += "endfunc\n\n";
+
             //return code 
             $$ = function_node
-
-
-      }
-|     type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM SEMICOLON                           
-      {
-            // This is the code to CALL an already-made function
-            Type func_type = $1;
-
-            find()
-
-            CodeNode *func_call = new CodeNode;
-            func_call->code = "";
-            func_call->code += "call "
 
 
       } 
@@ -180,25 +185,67 @@ function:
 arguements:
       arguement repeat_arguements         
       {
-            //    Set arguement node to first
-            CodeNode *arg_node = $1;
-            CodeNode *args = $2;
+            //  Init a vector of strings
+            vector<std::string> *args;
 
+            //  Push back first arguement
+            args->push_back(arguement);
+
+            //  Get other args from repeat_arguements
+            int i;
+            for(i = 0; i < $2->size(); i++)
+                  args->push_back($2.at(i));
+
+            //  Return Vector
+            $$ = args;      
       }
 |     %empty                              
       {
-            CodeNode node* = new CodeNode;
-            $$ = node;
+             //  Init a vector of strings
+            vector<std::string> *args;
+
+            //   Return empty vector
+            $$ = args;
       }
 ;
 
 repeat_arguements:
-      COMMA arguement repeat_arguements   { printf("repeat_arguements -> COMMA arguement repeat_arguements\n"); }
-|     %empty                              { printf("repeat_arguements -> epsilon\n"); }
+      COMMA arguement repeat_arguements   
+      {
+            //  Init a vector of strings
+            vector<std::string> *args;
+
+            //  Push back first arguement
+            args->push_back(arguement);
+
+            // Add repeat args now
+            int i;
+            for(i = 0; i < $3->size(); i++)
+                  args->push_back($3->at(i));
+
+            //  Now return
+            $$ = args;
+
+      }
+|     %empty                              
+      {
+            //  just init an empty vector and return
+             //  Init a vector of strings
+            vector<std::string> *args;
+
+            $$ = args;
+      }
 ;
 
 arguement: 
-      type IDENTIFIER                     { printf("arguement -> type IDENTIFIER\n"); }
+      type IDENTIFIER                     
+      {
+            //  This will just return a string, and add the vars to table
+            add_variable_to_symbol_table(std::string($2), $1);
+            
+            //  Return
+            $$ = std::string($1);
+      }
 |     type array                          { printf("arguement -> array\n");}
 ;
 
@@ -225,14 +272,35 @@ type:
 ;
 
 statements:
-      statement SEMICOLON statements  { printf("statements -> statement SEMICOLON statements\n"); }
-|      controlstmt statements          { printf("statements -> controlstmt statements\n"); }
-|     %empty                          { printf("statements -> epsilon\n"); }
+      statement SEMICOLON statements  
+      {
+            // Just Concatenate the two nodes here
+            CodeNode *node = new CodeNode;
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $2;
+
+            node->code = "";
+            node->code += node1->code.c_str();
+            node->code += std::string("\n");
+            node->code += node2->code.c_str();
+
+            //  Return
+            $$ -> node;
+
+      }
+|     controlstmt statements          {}
+|     %empty                          
+      {
+            //  return an empty code node here
+            CodeNode *empty = new CodeNode;
+            empty->code = "";
+            $$ = empty;
+      }
 ;
 
 controlstmt:
-      whilestmt     { printf("controlstmt -> whilestmt\n"); }
-|     ifstmt        { printf("controlstmt -> ifstmt\n"); }
+      whilestmt     {}
+|     ifstmt        {}
 ;
 
 statement: 
@@ -268,18 +336,132 @@ ifstmt:
 ;
 
 assignment: 
-      IDENTIFIER ASSIGN expression                    { printf("assignment -> IDENTIFIER ASSIGN expression\n"); }
-|     array ASSIGN expression                         { printf("assignment -> array ASSIGN expression\n"); }
-|     IDENTIFIER ASSIGN functioncall                  { printf("assignment -> IDENTIFIER ASSIGN functioncall\n"); }
-|     IDENTIFIER ASSIGN io                            { printf("assignment -> IDENTIFIER ASSIGn io\n"); }
+      IDENTIFIER ASSIGN expression                    
+      {
+            //  assigns a value to a var
+            Codenode *node = new CodeNode;
+
+            //  Get Identifier
+            node->name = std::string($1);
+
+            //  Declare 
+            node->code = "";
+            node->code += ". ";
+            node->code += std::string($1);
+            node->code += "\n";
+
+            //  So we set up temporary value to be returned
+            //  Code that sets the value of "temp" will be stored in the expression module
+            CodeNode *exp_node = $5;
+            node->code += exp_node->code.c_str();
+
+            //  Now assign value
+            node->code += std::string("= ");
+            node->code += std::string($1);
+            node->code += std::string(", ");
+            node->code += exp_node->name;
+            node->code += std::string("\n");
+
+            //  Return node
+            $$ = node;
+      }
+|     array ASSIGN expression                         
+      { 
+            printf("assignment -> array ASSIGN expression\n"); 
+      }
+|     IDENTIFIER ASSIGN functioncall                  
+      {
+            //  Luckily, mil makes this easier than expected
+            Codenode *node = new CodeNode;
+
+            //  Get Identifier, init code
+            node->name = std::string($1);
+            node->code = "";
+
+            //  Get name of function being called
+            std::string func_name = std::string($3);
+
+            //  Add code
+            node->code += $3->code;
+            node->code += "= ";
+            node->code += std::string($1);
+            node->code += std::string(", ");
+            node->code += std::string($3->name);
+            node->code += std::string("\n");
+
+            //  Return
+            $$ = node;
+      }
+|     IDENTIFIER ASSIGN input                            
+      {
+            //  COnstruct input string
+            CodeNode *node = new CodeNode;
+            node->code = "";
+            node->code += $3->code.c_str();
+            node->code += std::string(" ");
+            node->code += std::string($1);
+            node->code += std::string("\n");
+
+            // return
+            $$ = node;
+      }
 ;
 
 functioncall:
-      IDENTIFIER BEGINPARAM passingargs ENDPARAM      { printf("functioncall -> IDENTIFIER BEGINBRACKET passingargs ENDPARAM\n"); }
+      type FUNCTION IDENTIFIER BEGINPARAM passingargs ENDPARAM SEMICOLON                           
+      {
+            // This is the code to CALL an already-made function
+            Type func_type = $1;
+            std::string name = $3;
+
+            if(!find(name, func_type))
+            {
+                  yyerror("ERROR: Function not defined.");
+            }
+
+            CodeNode *func_call = new CodeNode;
+
+            func_call->name = std::string($3);
+            func_call->code = "";
+            // ARGUEMENTS HERE
+            vector<std::string> *args = arguements;
+
+            //    Arguements will return a vector or arguements, pass them
+            //    To the function here
+            int i;
+            for(i = 0; i < args->size(); i++)
+            {
+                  func_call->code += std::string("param ");
+                  func_call->code += args->at(i);
+                  func_call->code += std::string("\n");
+            }
+            func_call->code += "call ";
+            func_call->code += name;
+            func_call->code +=", ";
+
+            //return code
+            $$ = func_call;
+
+      }
 ;
 
 passingargs:
-      expression repeat_passingargs             { printf("passingargs -> IDENTIFIER repeat_passingargs\n"); }
+      expression repeat_passingargs             
+      { 
+            //  Init a vector of strings
+            vector<std::string> *args;
+
+            //  Push back first arguement
+            args->push_back($1->name);
+
+            //  Get other args from repeat_arguements
+            int i;
+            for(i = 0; i < $2->size(); i++)
+                  args->push_back($2.at(i));
+
+            //  Return Vector
+            $$ = args;
+      }
 |     %empty                                    {printf("passingargs -> epsilon\n"); }
 
 repeat_passingargs:
@@ -292,34 +474,61 @@ declaration:
             // "type" now returns Type of variable
             CodeNode *node = new CodeNode;
 
-            //    Retreieve Code
-            node->code = $2;
+            // Create node code here
+            node->name = std::string($2);
+            node->code = "";
+            node->code += ". ";
+            node->code += std::string($2);
 
             //    Add to symbol table
             add_variable_to_symbol_table(node->name, $1);
 
+
             //    return
             $$ = node;
       }
-|     type assignment                           { printf("declaration -> type assignment\n"); }
+|     type assignment                           
+      {
+            //  these two nodes are basically made already so just concat them, 
+            //  But also check if they exist
+            Type f = $1;
+            CodeNode *node2 = $2;
+
+            //  Add to table, since we are also declaring here
+            add_variable_to_symbol_table(node2->name, f);
+
+            // Now write the code
+            node->code = "";
+            node->code += $2->code.c_str();
+
+            // Return
+            $$ = node;
+
+
+      }
 |     type array                                { printf("declaration -> type array\n"); }
 ;
 
-io:
-      INPUT BEGINPARAM ENDPARAM                 { printf("io -> INPUT BEGINPARAM ref ENDPARAM\n"); }
-|     OUTPUT BEGINPARAM ref ENDPARAM            
+input:
+      INPUT BEGINPARAM ENDPARAM                 
       {
             CodeNode *node = new CodeNode;
-            CodeNode *ref_node = ref;
-
             node->code = "";
-            node->code += ".> ";
-            node->code += ref->code;
+            node->code += ".<";
             $$ = node;
+      }
+;
+output:
+      OUTPUT BEGINPARAM ref ENDPARAM            
+      {
+            //  Construct output
+            CodeNode *node = new CodeNode;
+            node->code = "";
+            node->code += std::string(".> ");
+            node->code += $3->code.c_str();
 
-            // .> IDENTIFIER
-            // .< IDENTIFIER   
-
+            // Return node
+            $$ = node;
       }
 ;
 
@@ -370,29 +579,13 @@ equalityexp:
 
 relop:
       LT                                  
-      {
-            CodeNode *node = new CodeNode;
-            node->code = $1;
-            $$ = node;
-      }
+      {}
 |     LTE
-      {
-            CodeNode *node = new CodeNode;
-            node->code = $1;
-            $$ = node;
-      }
+      {}
 |     GT                                  
-      {
-            CodeNode *node = new CodeNode;
-            node->code = $1;
-            $$ = node;
-      }
+      {}
 |     GTE
-      {
-            CodeNode *node = new CodeNode;
-            node->code = $1;
-            $$ = node;
-      }
+      {}
 ;
 
 relationexp:
