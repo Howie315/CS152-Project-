@@ -144,18 +144,36 @@ function:
             //  Track type of return
             Type func_type = type;
 
-            //  construct code here
+            //  Add function to symbol table here
+            add_function_to_symbol_table(std::string($3));
+
             CodeNode *function_node = new CodeNode;
             function_node->code = "";
-            function_node->code += "\nfunc ";
+
+            //    Arguements will return a vector or arguements, pass them
+            //    To the function here
+            int i;
+            for(i = 0; i < args.size(); i++)
+            {
+                  func_call->code += std::string(". ");
+                  func_call->code += std::to_string(args.at(i));
+                  func_call->code += std::string("\n");
+            }
+            for(i = 0; i < args.size(); i++)
+            {
+                  func_call->code += std::string("= ");
+                  func_call->code += args.at(i);
+                  func_call->code += std::to_string(i);
+                  func_call->code += std::string("$\n");
+            }
+
+            //  construct code here
+            function_node->code += "func ";
             function_node->code += std::string($3);
             function_node->code += "\n";
             function_node->code += $5->code;  //  Add Args
-            function_node->code += $8->code;  //  Add Function END_BODY
-            function_node->code += "\nendfunc\n\n";
-
-            //  Add function to symbol table here
-            add_function_to_symbol_table(std::string($3));
+            function_node->code += $8->code;  //  Add statements
+            function_node->code += "endfunc\n\n";
 
             //return code 
             $$ = function_node
@@ -166,13 +184,35 @@ function:
       {
             // This is the code to CALL an already-made function
             Type func_type = $1;
+            std::string name = $3;
 
-            find()
+            if(!find(name, func_type))
+            {
+                  yyerror("ERROR: Function not defined.");
+            }
 
             CodeNode *func_call = new CodeNode;
-            func_call->code = "";
-            func_call->code += "call "
 
+
+            func_call->code = "";
+            // ARGUEMENTS HERE
+            vector<std::string> *args = arguements;
+
+            //    Arguements will return a vector or arguements, pass them
+            //    To the function here
+            int i;
+            for(i = 0; i < args->size(); i++)
+            {
+                  func_call->code += std::string("param ");
+                  func_call->code += args->at(i);
+                  func_call->code += std::string("\n");
+            }
+            func_call->code += "call ";
+            func_call->code += name;
+            func_call->code +=", ";
+
+            //return code
+            $$ = func_call;
 
       } 
 ;
@@ -180,21 +220,56 @@ function:
 arguements:
       arguement repeat_arguements         
       {
-            //    Set arguement node to first
-            CodeNode *arg_node = $1;
-            CodeNode *args = $2;
+            //  Init a vector of strings
+            vector<std::string> *args;
 
+            //  Push back first arguement
+            args->push_back(arguement);
+
+            //  Get other args from repeat_arguements
+            int i;
+            for(i = 0; i < $2->size(); i++)
+                  args->push_back($2.at(i));
+
+            //  Return Vector
+            $$ = args;      
       }
 |     %empty                              
       {
-            CodeNode node* = new CodeNode;
-            $$ = node;
+             //  Init a vector of strings
+            vector<std::string> *args;
+
+            //   Return empty vector
+            $$ = args;
       }
 ;
 
 repeat_arguements:
-      COMMA arguement repeat_arguements   { printf("repeat_arguements -> COMMA arguement repeat_arguements\n"); }
-|     %empty                              { printf("repeat_arguements -> epsilon\n"); }
+      COMMA arguement repeat_arguements   
+      {
+            //  Init a vector of strings
+            vector<std::string> *args;
+
+            //  Push back first arguement
+            args->push_back(arguement);
+
+            // Add repeat args now
+            int i;
+            for(i = 0; i < $3->size(); i++)
+                  args->push_back($3->at(i));
+
+            //  Now return
+            $$ = args;
+
+      }
+|     %empty                              
+      {
+            //  just init an empty vector and return
+             //  Init a vector of strings
+            vector<std::string> *args;
+
+            $$ = args;
+      }
 ;
 
 arguement: 
@@ -225,14 +300,35 @@ type:
 ;
 
 statements:
-      statement SEMICOLON statements  { printf("statements -> statement SEMICOLON statements\n"); }
-|      controlstmt statements          { printf("statements -> controlstmt statements\n"); }
-|     %empty                          { printf("statements -> epsilon\n"); }
+      statement SEMICOLON statements  
+      {
+            // Just Concatenate the two nodes here
+            CodeNode *node = new CodeNode;
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $2;
+
+            node->code = "";
+            node->code += node1->code;
+            node->code += std::string("\n");
+            node->code += node2->code;
+
+            //  Return
+            $$ -> node;
+
+      }
+|     controlstmt statements          {// PHASE 4}
+|     %empty                          
+      {
+            //  return an empty code node here
+            CodeNode *empty = new CodeNode;
+            empty->code = "";
+            $$ = empty;
+      }
 ;
 
 controlstmt:
-      whilestmt     { printf("controlstmt -> whilestmt\n"); }
-|     ifstmt        { printf("controlstmt -> ifstmt\n"); }
+      whilestmt     {//Phase 4}
+|     ifstmt        {//Phase 4}
 ;
 
 statement: 
@@ -301,7 +397,11 @@ declaration:
             //    return
             $$ = node;
       }
-|     type assignment                           { printf("declaration -> type assignment\n"); }
+|     type assignment                           
+      {
+            //  these two nodes are basically made alreadym so just concat them
+            CodeNode *node1 = 
+      }
 |     type array                                { printf("declaration -> type array\n"); }
 ;
 
