@@ -79,15 +79,15 @@ extern int yydebug;
     COMMA = 289,
     OUTPUT = 290,
     INPUT = 291,
-    NUMBER = 292,
-    DECIMAL = 293,
-    EQ = 294,
-    LT = 295,
-    LTE = 296,
-    GT = 297,
-    GTE = 298,
-    NE = 299,
-    IDENTIFIER = 300
+    EQ = 292,
+    LT = 293,
+    LTE = 294,
+    GT = 295,
+    GTE = 296,
+    NE = 297,
+    IDENTIFIER = 298,
+    NUMBER = 299,
+    DECIMAL = 300
   };
 #endif
 
@@ -96,13 +96,15 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 88 "parser.y" /* yacc.c:1909  */
+#line 111 "parser.y" /* yacc.c:1909  */
 
   char *op_val;
   struct CodeNode *code_node;
   int int_val;
+  Type *type_node;
+  std::vector<std::string> *string_chain;
 
-#line 106 "parser.tab.h" /* yacc.c:1909  */
+#line 108 "parser.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
