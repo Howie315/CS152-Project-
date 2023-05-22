@@ -4,6 +4,9 @@
   #include "parser.tab.h"
 
   int lineCount = 0, lineCharacterCount = 0;
+
+  extern char* identToken;
+  extern int numberToken;
 %}
 
 INTEGER 	        int
@@ -81,11 +84,11 @@ COMMENT           \/\/[^\n]*\n?
 {GTE}     		    { lineCharacterCount += yyleng; return GTE; }
 {NE}              { lineCharacterCount += yyleng; return NE; }
 
-{FUNCTION}		    { lineCharacterCount += yyleng; return FUNCTION; }
-{BEGINSCOPE}		  { lineCharacterCount += yyleng; return BEGINSCOPE; }
-{ENDSCOPE}		    { lineCharacterCount += yyleng; return ENDSCOPE; }
-{BEGINPARAM}		  { lineCharacterCount += yyleng; return BEGINPARAM; }
-{ENDPARAM}		    { lineCharacterCount += yyleng; return ENDPARAM; }
+{FUNCTION}		    { printf("FUNCTION\n");   lineCharacterCount += yyleng; return FUNCTION; }
+{BEGINSCOPE}		  { printf("BEGINSCOPE\n"); lineCharacterCount += yyleng; return BEGINSCOPE; }
+{ENDSCOPE}		    { printf("ENDSCOPE\n");   lineCharacterCount += yyleng; return ENDSCOPE; }
+{BEGINPARAM}		  { printf("BEGINPARAM\n"); lineCharacterCount += yyleng; return BEGINPARAM; }
+{ENDPARAM}		    { printf("ENDPARAM\n");   lineCharacterCount += yyleng; return ENDPARAM; }
 {BEGINBRACKET}	  { lineCharacterCount += yyleng; return BEGINBRACKET; }
 {ENDBRACKET}		  { lineCharacterCount += yyleng; return ENDBRACKET; }
 {IF}          	  { lineCharacterCount += yyleng; return IF;}
@@ -107,10 +110,24 @@ COMMENT           \/\/[^\n]*\n?
 {OUTPUT}		      { lineCharacterCount += yyleng; return OUTPUT; }
 {INPUT}			      { lineCharacterCount += yyleng; return INPUT; }
 
-{IDENTIFIER}   	  { lineCharacterCount += yyleng; return IDENTIFIER; }
+{IDENTIFIER}   	  { printf("IDENTIFIER: %s\n", yytext);
+                    lineCharacterCount += yyleng; 
+                    char* token = new char[yyleng];
+                    strcpy(token, yytext);
+                    yylval.op_val = token;
+                    identToken = yytext;
+                    return IDENTIFIER; 
+                  }
 {BAD_IDENTIFIER}  { printf("Error: Invalid identifier %s on line %d, col %d\n", yytext, lineCount + 1, lineCharacterCount + 1); lineCharacterCount += yyleng; exit(1); }
 
-{NUMBER}      	  { lineCharacterCount += yyleng; return NUMBER; }
+{NUMBER}      	  { printf("NUMBER: %d\n", atoi(yytext));
+                    lineCharacterCount += yyleng; 
+                    char* token = new char[yyleng];
+                    strcpy(token, yytext);
+                    yylval.op_val = token;
+                    numberToken = atoi(yytext);
+                    return NUMBER; 
+                  }
 {DECIMAL}    		  { lineCharacterCount += yyleng; return DECIMAL; }
 
 {COMMENT}		      { lineCharacterCount += yyleng; }

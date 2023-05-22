@@ -1,4 +1,4 @@
-void func main() {
+void func main(int a, int b) {
 	int n;
 	int a[1000];
 	int i;
