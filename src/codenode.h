@@ -8,3 +8,9 @@ struct CodeNode {
   std::string code;
   std::string name;
 };
+
+struct ExpNode {
+  std::string code;
+  std::string name;
+  int type;
+};

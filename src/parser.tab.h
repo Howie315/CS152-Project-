@@ -100,9 +100,10 @@ union YYSTYPE
 
       char* op_val;
       struct CodeNode* code_node;
+      struct ExpNode* exp_node;
       int int_val;
 
-#line 106 "parser.tab.h" /* yacc.c:1909  */
+#line 107 "parser.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

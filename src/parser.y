@@ -18,8 +18,8 @@ enum Type { Integer, Array, Boolean, Double, Character};
 
 /*
 
-      Integer = 0
-      Array = 1
+      Integer = 1
+      Array = 5
       Boolean = 2
       Double = 3
       Character = 4
@@ -134,6 +134,7 @@ void print_symbol_table(void) {
 %union {
       char* op_val;
       struct CodeNode* code_node;
+      struct ExpNode* exp_node;
       int int_val;
 }
 
@@ -151,15 +152,16 @@ void print_symbol_table(void) {
 %token <op_val> IDENTIFIER
 
 %type <code_node> expression assignment functioncall
-%type <code_node> functions function
+%type <code_node> functions function array_declaration 
 %type <code_node> arguement arguements repeat_arguements
 %type <code_node> statement statements
 %type <code_node> output input
-%type <code_node> returnstmt declaration array
+%type <code_node> returnstmt declaration 
 %type <code_node> func_ident
 %type <code_node> passingargs repeat_passingargs
 %type <code_node> logicop eqop relop addop multop multexp term assignexp logicexp relationexp addexp equalityexp
 %type <int_val> type
+%type <exp_node> ident_extend
 %%
 
 prog_start:
@@ -345,22 +347,19 @@ controlstmt:
 statement: 
       returnstmt    
       {
-            //  These all return other code that is processed by the other nodes.
-            //  Code will be identical amoungst all here.
-            //CodeNode *node = $1; $$ = node;
+            CodeNode* node = $1; $$ = node;
       }
 |     assignment    
       { 
-            //CodeNode *node = $1; $$ = node;  
+            CodeNode *node = $1; $$ = node;  
       }
 |     functioncall
       { 
-            //CodeNode *node = $1; $$ = node;  
+            CodeNode *node = $1; $$ = node;  
       }
 |     declaration
       { 
-            CodeNode *node = $1; 
-            $$ = node;  
+            CodeNode *node = $1; $$ = node;  
       }
 |     output
       { 
@@ -434,8 +433,40 @@ ifstmt:
       }
 ;
 
-assignment: 
-      IDENTIFIER ASSIGN expression                    
+assignment:
+      IDENTIFIER BEGINBRACKET expression ENDBRACKET ASSIGN expression 
+      {
+            // dst[index] = src
+            // []= dst, index, src
+
+            CodeNode *node = new CodeNode;
+            CodeNode *expIndex_node = $3;
+            CodeNode *expSrc_node = $6;
+
+            node->code = "";
+            node->code += expIndex_node->code + expSrc_node->code;
+            node->code += "[]= " + std::string($1) + ", ";
+            node->code += expIndex_node->name + ", ";
+            node->code += expSrc_node->name + "\n";
+
+            $$ = node;
+      }
+|     IDENTIFIER ASSIGN IDENTIFIER BEGINBRACKET expression ENDBRACKET
+      {
+            // dst = src[index]
+            // =[] dst, src, index
+
+            CodeNode *node = new CodeNode;
+            CodeNode *expIndex_node = $5;
+
+            node->code = expIndex_node->code;
+            node->code += "=[] " + std::string($1) + ", ";
+            node->code += std::string($3) + ", ";
+            node->code += expIndex_node->name + "\n";
+
+            $$ = node;
+      }
+|     IDENTIFIER ASSIGN expression                     
       {
             //  Check if ID is in table first 
             std::string id = $1;
@@ -451,7 +482,6 @@ assignment:
             //  First, add code that creates the expression
             node->code = "";
             node->code += exp_node->code;
-
             // Then add the assignment;
             node->code += "= ";
             node->code += id;
@@ -459,10 +489,11 @@ assignment:
             node->code += exp_node->name;
             node->code += "\n";
 
+            node->name = id;
+
             //  Return
             $$ = node;
       }
-|     array ASSIGN expression                         {  }
 |     IDENTIFIER ASSIGN functioncall                  
       {  
             //  Check if ID is in table first 
@@ -478,6 +509,10 @@ assignment:
 
             node->code = "";
             node->code += call_node->code;
+            node->code += id;
+            node->code += "\n";
+
+            node->name = id;
 
             $$ = node;
 
@@ -501,6 +536,8 @@ assignment:
             node->code = input_node->code;
             node->code += id;
             node->code += "\n";
+
+            node->name = id;
             
             //  Return
             $$ = node;
@@ -511,6 +548,18 @@ functioncall:
       IDENTIFIER BEGINPARAM passingargs ENDPARAM      
       {
             CodeNode *node = new CodeNode;
+            CodeNode *args_node = $3;
+            std::string id = $1;
+
+            node->code = "";
+            node->code += args_node->code;
+            node->code += "call ";
+            node->code += id;
+            node->code +=", ";
+
+            node->name = id;
+
+            $$ = node;
 
       }
 ;
@@ -518,7 +567,21 @@ functioncall:
 passingargs:
       expression repeat_passingargs             
       {
+            CodeNode *node = new CodeNode;
+            CodeNode *exp_node = $1;
+            CodeNode *rep_node = $2;
+
+            node->code = "";
+            node->code += exp_node->code;
+            node->code += rep_node->code;
+            node->code += "param ";
+            node->code += exp_node->name;
+            node->code += "\n";
+
+            node->name += rep_node->name;
             
+
+            $$ = node;
       }
 |     %empty                                    
       {  
@@ -527,7 +590,24 @@ passingargs:
       }
 
 repeat_passingargs:
-      COMMA expression repeat_arguements        {  }
+      COMMA expression repeat_arguements        
+      {  
+            CodeNode *node = new CodeNode;
+            CodeNode *exp_node = $2;
+            CodeNode *rep_node = $3;
+
+            node->code = "";
+            node->code += exp_node->code;
+            node->code += rep_node->code;
+            node->code += "param ";
+            node->code += exp_node->name;
+            node->code += "\n";
+
+            node->name += rep_node->name;
+            
+
+            $$ = node;
+      }
 |     %empty                                    
       {  
             CodeNode *node = new CodeNode;
@@ -553,9 +633,43 @@ declaration:
             //  Return
             $$ = node;
       }
-|     type array                               
-      {     
+|     type assignment
+      {
+            CodeNode *node = new CodeNode;
+
+            // Get Identifier
+            CodeNode *node2 = $2;
+
+            // Add to symbol table
+            add_variable_to_symbol_table(node2->name, 1);
+
+            //    Add expression code
+            node->code = "";
+            node->code += node2->code;
+
+            //    Create Declaration 
+            node->code += ". ";
+            node->code += node2->code;
+            node->code += "\n";
+
             
+      }
+|     type array_declaration                             
+      {     
+            // DECLARATION
+            // .[] name, n
+
+            CodeNode* node = new CodeNode;
+            node = $2;
+
+            if (find(node->name, 5)) {
+                  yyerror("Error: Symbol already used.");
+            } else {
+                  add_variable_to_symbol_table(node->name, 5);
+            }
+
+            $$ = node;
+
       }
 ;
 
@@ -579,28 +693,42 @@ output:
      OUTPUT BEGINPARAM expression ENDPARAM            
      {
             CodeNode *node = new CodeNode;
-            //CodeNode *ref_node = $3;
+            CodeNode *exp_node = $3;
+
             node->code = "";
+            node->code += exp_node->code;
             node->code += ".> ";
-            //node->code += ref_node->name;
+            node->code += exp_node->name;
             node->code += "\n";
 
             $$ = node;
      }
 ;
 
-array:
+array_declaration:
       IDENTIFIER BEGINBRACKET expression ENDBRACKET 
-      {  
+      {    
+            // creates array
+
+
             CodeNode *node = new CodeNode;
+            CodeNode *exp_node = $3;
+            std::string id = $1;
 
             //  Add identifier string to code in node
-            node->code = $1;
+            node->code += exp_node->code;
+            node->code += ".[] ";
+            node->code += id;
+            node->code += ", ";
+            node->code += exp_node->name;
+            node->code += "\n";
 
-            // "id "
+            node->name = id;
+
+            // Return
+            $$ = node;
       }
 ;
-
 
 expression:
       assignexp                           
@@ -869,7 +997,7 @@ term:
             CodeNode* exp_node = $2;
             node->code = exp_node->code;
 
-            $$ = node;
+            $$ = exp_node;
       }
 |     NUMBER                              
       { 
@@ -879,18 +1007,20 @@ term:
 
             $$ = node;
       }
-|     IDENTIFIER                          
+|     IDENTIFIER             
       { 
             CodeNode* node = new CodeNode;
-            node->code = "";
-            node->name = $1;
+            ExpNode *exp = new ExpNode;
+            std::string id = $1;
+            node->name = id;
+            node->name = id;
 
             $$ = node;
       }
-|     array                               
-      { 
-
-      }
+|      functioncall
+{
+      
+}
 ; 
 
 %%
