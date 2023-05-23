@@ -1,9 +1,3 @@
-Nonterminals useless in grammar
-
-   function_ident
-   symbol
-
-
 Terminals unused in grammar
 
    FOR
@@ -22,16 +16,17 @@ Grammar
     3 functions: function
     4          | function functions
 
-    5 function: type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE
+    5 func_ident: FUNCTION IDENTIFIER
 
-    6 arguements: arguement repeat_arguements
-    7           | %empty
+    6 function: type func_ident BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE
 
-    8 repeat_arguements: COMMA arguement repeat_arguements
-    9                  | %empty
+    7 arguements: arguement repeat_arguements
+    8           | %empty
 
-   10 arguement: type IDENTIFIER
-   11          | type array
+    9 repeat_arguements: COMMA arguement repeat_arguements
+   10                  | %empty
+
+   11 arguement: type IDENTIFIER
 
    12 type: VOID
    13     | INTEGER
@@ -50,7 +45,7 @@ Grammar
    23          | assignment
    24          | functioncall
    25          | declaration
-   26          | io
+   26          | output
    27          | continuestmt
    28          | breakstmt
    29          | expression
@@ -69,7 +64,7 @@ Grammar
    36 assignment: IDENTIFIER ASSIGN expression
    37           | array ASSIGN expression
    38           | IDENTIFIER ASSIGN functioncall
-   39           | IDENTIFIER ASSIGN io
+   39           | IDENTIFIER ASSIGN input
 
    40 functioncall: IDENTIFIER BEGINPARAM passingargs ENDPARAM
 
@@ -80,58 +75,56 @@ Grammar
    44                   | %empty
 
    45 declaration: type IDENTIFIER
-   46            | type assignment
-   47            | type array
+   46            | type array
 
-   48 io: INPUT BEGINPARAM ENDPARAM
-   49   | OUTPUT BEGINPARAM ref ENDPARAM
+   47 input: INPUT BEGINPARAM ENDPARAM
 
-   50 ref: IDENTIFIER
-   51    | array
+   48 output: OUTPUT BEGINPARAM expression ENDPARAM
 
-   52 array: IDENTIFIER BEGINBRACKET expression ENDBRACKET
+   49 array: IDENTIFIER BEGINBRACKET expression ENDBRACKET
 
-   53 expression: assignexp
+   50 expression: assignexp
 
-   54 assignexp: logicexp logicop assignexp
-   55          | logicexp
+   51 assignexp: logicexp logicop assignexp
+   52          | logicexp
 
-   56 logicop: AND
-   57        | OR
+   53 logicop: AND
+   54        | OR
 
-   58 logicexp: equalityexp eqop logicexp
-   59         | equalityexp
+   55 logicexp: equalityexp eqop logicexp
+   56         | equalityexp
 
-   60 eqop: EQ
-   61     | NE
+   57 eqop: EQ
+   58     | NE
 
-   62 equalityexp: relationexp relop equalityexp
-   63            | relationexp
+   59 equalityexp: relationexp relop equalityexp
+   60            | relationexp
 
-   64 relop: LT
-   65      | LTE
-   66      | GT
-   67      | GTE
+   61 relop: LT
+   62      | LTE
+   63      | GT
+   64      | GTE
 
-   68 relationexp: addexp addop relationexp
-   69            | addexp
+   65 relationexp: addexp addop relationexp
+   66            | addexp
 
-   70 addop: ADD
-   71      | SUB
+   67 addop: ADD
+   68      | SUB
 
-   72 addexp: multexp multop addexp
-   73       | multexp
+   69 addexp: multexp multop addexp
+   70       | multexp
 
-   74 multop: MUL
-   75       | DIV
-   76       | MOD
+   71 multop: MUL
+   72       | DIV
+   73       | MOD
 
-   77 multexp: NOT term
-   78        | term
+   74 multexp: NOT term
+   75        | term
 
-   79 term: BEGINPARAM expression ENDPARAM
-   80     | NUMBER
-   81     | ref
+   76 term: BEGINPARAM expression ENDPARAM
+   77     | NUMBER
+   78     | IDENTIFIER
+   79     | array
 
 
 Terminals, with rules where they appear
@@ -142,24 +135,24 @@ DOUBLE (258) 15
 BOOLEAN (259) 14
 CHAR (260) 16
 ASSIGN (261) 36 37 38 39
-ADD (262) 70
-SUB (263) 71
-DIV (264) 75
-MUL (265) 74
-MOD (266) 76
-EQ (267) 60
-LT (268) 64
-LTE (269) 65
-GT (270) 66
-GTE (271) 67
-NE (272) 61
+ADD (262) 67
+SUB (263) 68
+DIV (264) 72
+MUL (265) 71
+MOD (266) 73
+EQ (267) 57
+LT (268) 61
+LTE (269) 62
+GT (270) 63
+GTE (271) 64
+NE (272) 58
 FUNCTION (273) 5
-BEGINSCOPE (274) 5 30 34 35
-ENDSCOPE (275) 5 30 34 35
-BEGINPARAM (276) 5 30 34 35 40 48 49 79
-ENDPARAM (277) 5 30 34 35 40 48 49 79
-BEGINBRACKET (278) 52
-ENDBRACKET (279) 52
+BEGINSCOPE (274) 6 30 34 35
+ENDSCOPE (275) 6 30 34 35
+BEGINPARAM (276) 6 30 34 35 40 47 48 76
+ENDPARAM (277) 6 30 34 35 40 47 48 76
+BEGINBRACKET (278) 49
+ENDBRACKET (279) 49
 IF (280) 34 35
 ELSE (281) 35
 FOR (282)
@@ -170,17 +163,17 @@ TRUE (286)
 FALSE (287)
 RETURN (288) 33
 VOID (289) 12
-NOT (290) 77
-AND (291) 56
-OR (292) 57
+NOT (290) 74
+AND (291) 53
+OR (292) 54
 SEMICOLON (293) 17
-COMMA (294) 8 43
-OUTPUT (295) 49
-INPUT (296) 48
-NUMBER (297) 80
+COMMA (294) 9 43
+OUTPUT (295) 48
+INPUT (296) 47
+NUMBER (297) 77
 DECIMAL (298)
 INTEGER (299) 13
-IDENTIFIER (300) 5 10 36 38 39 40 45 50 52
+IDENTIFIER (300) 5 11 36 38 39 40 45 49 78
 
 
 Nonterminals, with rules where they appear
@@ -191,74 +184,76 @@ prog_start (47)
     on left: 1 2, on right: 0
 functions (48)
     on left: 3 4, on right: 1 4
-function (49)
-    on left: 5, on right: 3 4
-arguements (50)
-    on left: 6 7, on right: 5
-repeat_arguements (51)
-    on left: 8 9, on right: 6 8 43
-arguement (52)
-    on left: 10 11, on right: 6 8
-type (53)
-    on left: 12 13 14 15 16, on right: 5 10 11 45 46 47
-statements (54)
-    on left: 17 18 19, on right: 5 17 18 30 34 35
-controlstmt (55)
+func_ident (49)
+    on left: 5, on right: 6
+function (50)
+    on left: 6, on right: 3 4
+arguements (51)
+    on left: 7 8, on right: 6
+repeat_arguements (52)
+    on left: 9 10, on right: 7 9 43
+arguement (53)
+    on left: 11, on right: 7 9
+type (54)
+    on left: 12 13 14 15 16, on right: 6 11 45 46
+statements (55)
+    on left: 17 18 19, on right: 6 17 18 30 34 35
+controlstmt (56)
     on left: 20 21, on right: 18
-statement (56)
+statement (57)
     on left: 22 23 24 25 26 27 28 29, on right: 17
-whilestmt (57)
+whilestmt (58)
     on left: 30, on right: 20
-continuestmt (58)
+continuestmt (59)
     on left: 31, on right: 27
-breakstmt (59)
+breakstmt (60)
     on left: 32, on right: 28
-returnstmt (60)
+returnstmt (61)
     on left: 33, on right: 22
-ifstmt (61)
+ifstmt (62)
     on left: 34 35, on right: 21
-assignment (62)
-    on left: 36 37 38 39, on right: 23 46
-functioncall (63)
+assignment (63)
+    on left: 36 37 38 39, on right: 23
+functioncall (64)
     on left: 40, on right: 24 38
-passingargs (64)
+passingargs (65)
     on left: 41 42, on right: 40
-repeat_passingargs (65)
+repeat_passingargs (66)
     on left: 43 44, on right: 41
-declaration (66)
-    on left: 45 46 47, on right: 25
-io (67)
-    on left: 48 49, on right: 26 39
-ref (68)
-    on left: 50 51, on right: 49 81
-array (69)
-    on left: 52, on right: 11 37 47 51
-expression (70)
-    on left: 53, on right: 29 30 33 34 35 36 37 41 43 52 79
-assignexp (71)
-    on left: 54 55, on right: 53 54
-logicop (72)
-    on left: 56 57, on right: 54
-logicexp (73)
-    on left: 58 59, on right: 54 55 58
-eqop (74)
-    on left: 60 61, on right: 58
-equalityexp (75)
-    on left: 62 63, on right: 58 59 62
-relop (76)
-    on left: 64 65 66 67, on right: 62
-relationexp (77)
-    on left: 68 69, on right: 62 63 68
-addop (78)
-    on left: 70 71, on right: 68
-addexp (79)
-    on left: 72 73, on right: 68 69 72
-multop (80)
-    on left: 74 75 76, on right: 72
-multexp (81)
-    on left: 77 78, on right: 72 73
-term (82)
-    on left: 79 80 81, on right: 77 78
+declaration (67)
+    on left: 45 46, on right: 25
+input (68)
+    on left: 47, on right: 39
+output (69)
+    on left: 48, on right: 26
+array (70)
+    on left: 49, on right: 37 46 79
+expression (71)
+    on left: 50, on right: 29 30 33 34 35 36 37 41 43 48 49 76
+assignexp (72)
+    on left: 51 52, on right: 50 51
+logicop (73)
+    on left: 53 54, on right: 51
+logicexp (74)
+    on left: 55 56, on right: 51 52 55
+eqop (75)
+    on left: 57 58, on right: 55
+equalityexp (76)
+    on left: 59 60, on right: 55 56 59
+relop (77)
+    on left: 61 62 63 64, on right: 59
+relationexp (78)
+    on left: 65 66, on right: 59 60 65
+addop (79)
+    on left: 67 68, on right: 65
+addexp (80)
+    on left: 69 70, on right: 65 66 69
+multop (81)
+    on left: 71 72 73, on right: 69
+multexp (82)
+    on left: 74 75, on right: 69 70
+term (83)
+    on left: 76 77 78 79, on right: 74 75
 
 
 State 0
@@ -348,9 +343,11 @@ State 8
 
 State 9
 
-    5 function: type . FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE
+    6 function: type . func_ident BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE
 
     FUNCTION  shift, and go to state 12
+
+    func_ident  go to state 13
 
 
 State 10
@@ -369,21 +366,28 @@ State 11
 
 State 12
 
-    5 function: type FUNCTION . IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE
+    5 func_ident: FUNCTION . IDENTIFIER
 
-    IDENTIFIER  shift, and go to state 13
+    IDENTIFIER  shift, and go to state 14
 
 
 State 13
 
-    5 function: type FUNCTION IDENTIFIER . BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE
+    6 function: type func_ident . BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE
 
-    BEGINPARAM  shift, and go to state 14
+    BEGINPARAM  shift, and go to state 15
 
 
 State 14
 
-    5 function: type FUNCTION IDENTIFIER BEGINPARAM . arguements ENDPARAM BEGINSCOPE statements ENDSCOPE
+    5 func_ident: FUNCTION IDENTIFIER .
+
+    $default  reduce using rule 5 (func_ident)
+
+
+State 15
+
+    6 function: type func_ident BEGINPARAM . arguements ENDPARAM BEGINSCOPE statements ENDSCOPE
 
     DOUBLE   shift, and go to state 1
     BOOLEAN  shift, and go to state 2
@@ -391,51 +395,48 @@ State 14
     VOID     shift, and go to state 4
     INTEGER  shift, and go to state 5
 
-    $default  reduce using rule 7 (arguements)
+    $default  reduce using rule 8 (arguements)
 
-    arguements  go to state 15
-    arguement   go to state 16
-    type        go to state 17
-
-
-State 15
-
-    5 function: type FUNCTION IDENTIFIER BEGINPARAM arguements . ENDPARAM BEGINSCOPE statements ENDSCOPE
-
-    ENDPARAM  shift, and go to state 18
+    arguements  go to state 16
+    arguement   go to state 17
+    type        go to state 18
 
 
 State 16
 
-    6 arguements: arguement . repeat_arguements
+    6 function: type func_ident BEGINPARAM arguements . ENDPARAM BEGINSCOPE statements ENDSCOPE
 
-    COMMA  shift, and go to state 19
-
-    $default  reduce using rule 9 (repeat_arguements)
-
-    repeat_arguements  go to state 20
+    ENDPARAM  shift, and go to state 19
 
 
 State 17
 
-   10 arguement: type . IDENTIFIER
-   11          | type . array
+    7 arguements: arguement . repeat_arguements
 
-    IDENTIFIER  shift, and go to state 21
+    COMMA  shift, and go to state 20
 
-    array  go to state 22
+    $default  reduce using rule 10 (repeat_arguements)
+
+    repeat_arguements  go to state 21
 
 
 State 18
 
-    5 function: type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM . BEGINSCOPE statements ENDSCOPE
+   11 arguement: type . IDENTIFIER
 
-    BEGINSCOPE  shift, and go to state 23
+    IDENTIFIER  shift, and go to state 22
 
 
 State 19
 
-    8 repeat_arguements: COMMA . arguement repeat_arguements
+    6 function: type func_ident BEGINPARAM arguements ENDPARAM . BEGINSCOPE statements ENDSCOPE
+
+    BEGINSCOPE  shift, and go to state 23
+
+
+State 20
+
+    9 repeat_arguements: COMMA . arguement repeat_arguements
 
     DOUBLE   shift, and go to state 1
     BOOLEAN  shift, and go to state 2
@@ -444,1136 +445,1084 @@ State 19
     INTEGER  shift, and go to state 5
 
     arguement  go to state 24
-    type       go to state 17
-
-
-State 20
-
-    6 arguements: arguement repeat_arguements .
-
-    $default  reduce using rule 6 (arguements)
+    type       go to state 18
 
 
 State 21
 
-   10 arguement: type IDENTIFIER .
-   52 array: IDENTIFIER . BEGINBRACKET expression ENDBRACKET
+    7 arguements: arguement repeat_arguements .
 
-    BEGINBRACKET  shift, and go to state 25
-
-    $default  reduce using rule 10 (arguement)
+    $default  reduce using rule 7 (arguements)
 
 
 State 22
 
-   11 arguement: type array .
+   11 arguement: type IDENTIFIER .
 
     $default  reduce using rule 11 (arguement)
 
 
 State 23
 
-    5 function: type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINSCOPE . statements ENDSCOPE
+    6 function: type func_ident BEGINPARAM arguements ENDPARAM BEGINSCOPE . statements ENDSCOPE
 
     DOUBLE      shift, and go to state 1
     BOOLEAN     shift, and go to state 2
     CHAR        shift, and go to state 3
-    BEGINPARAM  shift, and go to state 26
-    IF          shift, and go to state 27
-    WHILE       shift, and go to state 28
-    CONTINUE    shift, and go to state 29
-    BREAK       shift, and go to state 30
-    RETURN      shift, and go to state 31
+    BEGINPARAM  shift, and go to state 25
+    IF          shift, and go to state 26
+    WHILE       shift, and go to state 27
+    CONTINUE    shift, and go to state 28
+    BREAK       shift, and go to state 29
+    RETURN      shift, and go to state 30
     VOID        shift, and go to state 4
-    NOT         shift, and go to state 32
-    OUTPUT      shift, and go to state 33
-    INPUT       shift, and go to state 34
-    NUMBER      shift, and go to state 35
+    NOT         shift, and go to state 31
+    OUTPUT      shift, and go to state 32
+    NUMBER      shift, and go to state 33
     INTEGER     shift, and go to state 5
-    IDENTIFIER  shift, and go to state 36
+    IDENTIFIER  shift, and go to state 34
 
     $default  reduce using rule 19 (statements)
 
-    type          go to state 37
-    statements    go to state 38
-    controlstmt   go to state 39
-    statement     go to state 40
-    whilestmt     go to state 41
-    continuestmt  go to state 42
-    breakstmt     go to state 43
-    returnstmt    go to state 44
-    ifstmt        go to state 45
-    assignment    go to state 46
-    functioncall  go to state 47
-    declaration   go to state 48
-    io            go to state 49
-    ref           go to state 50
-    array         go to state 51
-    expression    go to state 52
-    assignexp     go to state 53
-    logicexp      go to state 54
-    equalityexp   go to state 55
-    relationexp   go to state 56
-    addexp        go to state 57
-    multexp       go to state 58
-    term          go to state 59
+    type          go to state 35
+    statements    go to state 36
+    controlstmt   go to state 37
+    statement     go to state 38
+    whilestmt     go to state 39
+    continuestmt  go to state 40
+    breakstmt     go to state 41
+    returnstmt    go to state 42
+    ifstmt        go to state 43
+    assignment    go to state 44
+    functioncall  go to state 45
+    declaration   go to state 46
+    output        go to state 47
+    array         go to state 48
+    expression    go to state 49
+    assignexp     go to state 50
+    logicexp      go to state 51
+    equalityexp   go to state 52
+    relationexp   go to state 53
+    addexp        go to state 54
+    multexp       go to state 55
+    term          go to state 56
 
 
 State 24
 
-    8 repeat_arguements: COMMA arguement . repeat_arguements
+    9 repeat_arguements: COMMA arguement . repeat_arguements
 
-    COMMA  shift, and go to state 19
+    COMMA  shift, and go to state 20
 
-    $default  reduce using rule 9 (repeat_arguements)
+    $default  reduce using rule 10 (repeat_arguements)
 
-    repeat_arguements  go to state 60
+    repeat_arguements  go to state 57
 
 
 State 25
 
-   52 array: IDENTIFIER BEGINBRACKET . expression ENDBRACKET
+   76 term: BEGINPARAM . expression ENDPARAM
 
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
 
-    ref          go to state 50
-    array        go to state 62
-    expression   go to state 63
-    assignexp    go to state 53
-    logicexp     go to state 54
-    equalityexp  go to state 55
-    relationexp  go to state 56
-    addexp       go to state 57
-    multexp      go to state 58
-    term         go to state 59
+    array        go to state 59
+    expression   go to state 60
+    assignexp    go to state 50
+    logicexp     go to state 51
+    equalityexp  go to state 52
+    relationexp  go to state 53
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
 
 
 State 26
 
-   79 term: BEGINPARAM . expression ENDPARAM
+   34 ifstmt: IF . BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE
+   35       | IF . BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE
 
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
-
-    ref          go to state 50
-    array        go to state 62
-    expression   go to state 64
-    assignexp    go to state 53
-    logicexp     go to state 54
-    equalityexp  go to state 55
-    relationexp  go to state 56
-    addexp       go to state 57
-    multexp      go to state 58
-    term         go to state 59
+    BEGINPARAM  shift, and go to state 61
 
 
 State 27
 
-   34 ifstmt: IF . BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE
-   35       | IF . BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE
+   30 whilestmt: WHILE . BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE
 
-    BEGINPARAM  shift, and go to state 65
+    BEGINPARAM  shift, and go to state 62
 
 
 State 28
-
-   30 whilestmt: WHILE . BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE
-
-    BEGINPARAM  shift, and go to state 66
-
-
-State 29
 
    31 continuestmt: CONTINUE .
 
     $default  reduce using rule 31 (continuestmt)
 
 
-State 30
+State 29
 
    32 breakstmt: BREAK .
 
     $default  reduce using rule 32 (breakstmt)
 
 
-State 31
+State 30
 
    33 returnstmt: RETURN . expression
 
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
 
-    ref          go to state 50
-    array        go to state 62
-    expression   go to state 67
-    assignexp    go to state 53
-    logicexp     go to state 54
-    equalityexp  go to state 55
-    relationexp  go to state 56
-    addexp       go to state 57
-    multexp      go to state 58
-    term         go to state 59
+    array        go to state 59
+    expression   go to state 63
+    assignexp    go to state 50
+    logicexp     go to state 51
+    equalityexp  go to state 52
+    relationexp  go to state 53
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
+
+
+State 31
+
+   74 multexp: NOT . term
+
+    BEGINPARAM  shift, and go to state 25
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
+
+    array  go to state 59
+    term   go to state 64
 
 
 State 32
 
-   77 multexp: NOT . term
+   48 output: OUTPUT . BEGINPARAM expression ENDPARAM
 
-    BEGINPARAM  shift, and go to state 26
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
-
-    ref    go to state 50
-    array  go to state 62
-    term   go to state 68
+    BEGINPARAM  shift, and go to state 65
 
 
 State 33
 
-   49 io: OUTPUT . BEGINPARAM ref ENDPARAM
+   77 term: NUMBER .
 
-    BEGINPARAM  shift, and go to state 69
+    $default  reduce using rule 77 (term)
 
 
 State 34
 
-   48 io: INPUT . BEGINPARAM ENDPARAM
+   36 assignment: IDENTIFIER . ASSIGN expression
+   38           | IDENTIFIER . ASSIGN functioncall
+   39           | IDENTIFIER . ASSIGN input
+   40 functioncall: IDENTIFIER . BEGINPARAM passingargs ENDPARAM
+   49 array: IDENTIFIER . BEGINBRACKET expression ENDBRACKET
+   78 term: IDENTIFIER .
 
-    BEGINPARAM  shift, and go to state 70
+    ASSIGN        shift, and go to state 66
+    BEGINPARAM    shift, and go to state 67
+    BEGINBRACKET  shift, and go to state 68
+
+    $default  reduce using rule 78 (term)
 
 
 State 35
 
-   80 term: NUMBER .
+   45 declaration: type . IDENTIFIER
+   46            | type . array
 
-    $default  reduce using rule 80 (term)
+    IDENTIFIER  shift, and go to state 69
+
+    array  go to state 70
 
 
 State 36
 
-   36 assignment: IDENTIFIER . ASSIGN expression
-   38           | IDENTIFIER . ASSIGN functioncall
-   39           | IDENTIFIER . ASSIGN io
-   40 functioncall: IDENTIFIER . BEGINPARAM passingargs ENDPARAM
-   50 ref: IDENTIFIER .
-   52 array: IDENTIFIER . BEGINBRACKET expression ENDBRACKET
+    6 function: type func_ident BEGINPARAM arguements ENDPARAM BEGINSCOPE statements . ENDSCOPE
 
-    ASSIGN        shift, and go to state 71
-    BEGINPARAM    shift, and go to state 72
-    BEGINBRACKET  shift, and go to state 25
-
-    $default  reduce using rule 50 (ref)
+    ENDSCOPE  shift, and go to state 71
 
 
 State 37
-
-   45 declaration: type . IDENTIFIER
-   46            | type . assignment
-   47            | type . array
-
-    IDENTIFIER  shift, and go to state 73
-
-    assignment  go to state 74
-    array       go to state 75
-
-
-State 38
-
-    5 function: type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINSCOPE statements . ENDSCOPE
-
-    ENDSCOPE  shift, and go to state 76
-
-
-State 39
 
    18 statements: controlstmt . statements
 
     DOUBLE      shift, and go to state 1
     BOOLEAN     shift, and go to state 2
     CHAR        shift, and go to state 3
-    BEGINPARAM  shift, and go to state 26
-    IF          shift, and go to state 27
-    WHILE       shift, and go to state 28
-    CONTINUE    shift, and go to state 29
-    BREAK       shift, and go to state 30
-    RETURN      shift, and go to state 31
+    BEGINPARAM  shift, and go to state 25
+    IF          shift, and go to state 26
+    WHILE       shift, and go to state 27
+    CONTINUE    shift, and go to state 28
+    BREAK       shift, and go to state 29
+    RETURN      shift, and go to state 30
     VOID        shift, and go to state 4
-    NOT         shift, and go to state 32
-    OUTPUT      shift, and go to state 33
-    INPUT       shift, and go to state 34
-    NUMBER      shift, and go to state 35
+    NOT         shift, and go to state 31
+    OUTPUT      shift, and go to state 32
+    NUMBER      shift, and go to state 33
     INTEGER     shift, and go to state 5
-    IDENTIFIER  shift, and go to state 36
+    IDENTIFIER  shift, and go to state 34
 
     $default  reduce using rule 19 (statements)
 
-    type          go to state 37
-    statements    go to state 77
-    controlstmt   go to state 39
-    statement     go to state 40
-    whilestmt     go to state 41
-    continuestmt  go to state 42
-    breakstmt     go to state 43
-    returnstmt    go to state 44
-    ifstmt        go to state 45
-    assignment    go to state 46
-    functioncall  go to state 47
-    declaration   go to state 48
-    io            go to state 49
-    ref           go to state 50
-    array         go to state 51
-    expression    go to state 52
-    assignexp     go to state 53
-    logicexp      go to state 54
-    equalityexp   go to state 55
-    relationexp   go to state 56
-    addexp        go to state 57
-    multexp       go to state 58
-    term          go to state 59
+    type          go to state 35
+    statements    go to state 72
+    controlstmt   go to state 37
+    statement     go to state 38
+    whilestmt     go to state 39
+    continuestmt  go to state 40
+    breakstmt     go to state 41
+    returnstmt    go to state 42
+    ifstmt        go to state 43
+    assignment    go to state 44
+    functioncall  go to state 45
+    declaration   go to state 46
+    output        go to state 47
+    array         go to state 48
+    expression    go to state 49
+    assignexp     go to state 50
+    logicexp      go to state 51
+    equalityexp   go to state 52
+    relationexp   go to state 53
+    addexp        go to state 54
+    multexp       go to state 55
+    term          go to state 56
 
 
-State 40
+State 38
 
    17 statements: statement . SEMICOLON statements
 
-    SEMICOLON  shift, and go to state 78
+    SEMICOLON  shift, and go to state 73
 
 
-State 41
+State 39
 
    20 controlstmt: whilestmt .
 
     $default  reduce using rule 20 (controlstmt)
 
 
-State 42
+State 40
 
    27 statement: continuestmt .
 
     $default  reduce using rule 27 (statement)
 
 
-State 43
+State 41
 
    28 statement: breakstmt .
 
     $default  reduce using rule 28 (statement)
 
 
-State 44
+State 42
 
    22 statement: returnstmt .
 
     $default  reduce using rule 22 (statement)
 
 
-State 45
+State 43
 
    21 controlstmt: ifstmt .
 
     $default  reduce using rule 21 (controlstmt)
 
 
-State 46
+State 44
 
    23 statement: assignment .
 
     $default  reduce using rule 23 (statement)
 
 
-State 47
+State 45
 
    24 statement: functioncall .
 
     $default  reduce using rule 24 (statement)
 
 
-State 48
+State 46
 
    25 statement: declaration .
 
     $default  reduce using rule 25 (statement)
 
 
-State 49
+State 47
 
-   26 statement: io .
+   26 statement: output .
 
     $default  reduce using rule 26 (statement)
 
 
-State 50
-
-   81 term: ref .
-
-    $default  reduce using rule 81 (term)
-
-
-State 51
+State 48
 
    37 assignment: array . ASSIGN expression
-   51 ref: array .
+   79 term: array .
 
-    ASSIGN  shift, and go to state 79
+    ASSIGN  shift, and go to state 74
 
-    $default  reduce using rule 51 (ref)
+    $default  reduce using rule 79 (term)
 
 
-State 52
+State 49
 
    29 statement: expression .
 
     $default  reduce using rule 29 (statement)
 
 
+State 50
+
+   50 expression: assignexp .
+
+    $default  reduce using rule 50 (expression)
+
+
+State 51
+
+   51 assignexp: logicexp . logicop assignexp
+   52          | logicexp .
+
+    AND  shift, and go to state 75
+    OR   shift, and go to state 76
+
+    $default  reduce using rule 52 (assignexp)
+
+    logicop  go to state 77
+
+
+State 52
+
+   55 logicexp: equalityexp . eqop logicexp
+   56         | equalityexp .
+
+    EQ  shift, and go to state 78
+    NE  shift, and go to state 79
+
+    $default  reduce using rule 56 (logicexp)
+
+    eqop  go to state 80
+
+
 State 53
 
-   53 expression: assignexp .
+   59 equalityexp: relationexp . relop equalityexp
+   60            | relationexp .
 
-    $default  reduce using rule 53 (expression)
+    LT   shift, and go to state 81
+    LTE  shift, and go to state 82
+    GT   shift, and go to state 83
+    GTE  shift, and go to state 84
+
+    $default  reduce using rule 60 (equalityexp)
+
+    relop  go to state 85
 
 
 State 54
 
-   54 assignexp: logicexp . logicop assignexp
-   55          | logicexp .
+   65 relationexp: addexp . addop relationexp
+   66            | addexp .
 
-    AND  shift, and go to state 80
-    OR   shift, and go to state 81
+    ADD  shift, and go to state 86
+    SUB  shift, and go to state 87
 
-    $default  reduce using rule 55 (assignexp)
+    $default  reduce using rule 66 (relationexp)
 
-    logicop  go to state 82
+    addop  go to state 88
 
 
 State 55
 
-   58 logicexp: equalityexp . eqop logicexp
-   59         | equalityexp .
+   69 addexp: multexp . multop addexp
+   70       | multexp .
 
-    EQ  shift, and go to state 83
-    NE  shift, and go to state 84
+    DIV  shift, and go to state 89
+    MUL  shift, and go to state 90
+    MOD  shift, and go to state 91
 
-    $default  reduce using rule 59 (logicexp)
+    $default  reduce using rule 70 (addexp)
 
-    eqop  go to state 85
+    multop  go to state 92
 
 
 State 56
 
-   62 equalityexp: relationexp . relop equalityexp
-   63            | relationexp .
+   75 multexp: term .
 
-    LT   shift, and go to state 86
-    LTE  shift, and go to state 87
-    GT   shift, and go to state 88
-    GTE  shift, and go to state 89
-
-    $default  reduce using rule 63 (equalityexp)
-
-    relop  go to state 90
+    $default  reduce using rule 75 (multexp)
 
 
 State 57
 
-   68 relationexp: addexp . addop relationexp
-   69            | addexp .
+    9 repeat_arguements: COMMA arguement repeat_arguements .
 
-    ADD  shift, and go to state 91
-    SUB  shift, and go to state 92
-
-    $default  reduce using rule 69 (relationexp)
-
-    addop  go to state 93
+    $default  reduce using rule 9 (repeat_arguements)
 
 
 State 58
 
-   72 addexp: multexp . multop addexp
-   73       | multexp .
+   49 array: IDENTIFIER . BEGINBRACKET expression ENDBRACKET
+   78 term: IDENTIFIER .
 
-    DIV  shift, and go to state 94
-    MUL  shift, and go to state 95
-    MOD  shift, and go to state 96
+    BEGINBRACKET  shift, and go to state 68
 
-    $default  reduce using rule 73 (addexp)
-
-    multop  go to state 97
+    $default  reduce using rule 78 (term)
 
 
 State 59
 
-   78 multexp: term .
+   79 term: array .
 
-    $default  reduce using rule 78 (multexp)
+    $default  reduce using rule 79 (term)
 
 
 State 60
 
-    8 repeat_arguements: COMMA arguement repeat_arguements .
+   76 term: BEGINPARAM expression . ENDPARAM
 
-    $default  reduce using rule 8 (repeat_arguements)
+    ENDPARAM  shift, and go to state 93
 
 
 State 61
 
-   50 ref: IDENTIFIER .
-   52 array: IDENTIFIER . BEGINBRACKET expression ENDBRACKET
+   34 ifstmt: IF BEGINPARAM . expression ENDPARAM BEGINSCOPE statements ENDSCOPE
+   35       | IF BEGINPARAM . expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE
 
-    BEGINBRACKET  shift, and go to state 25
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
 
-    $default  reduce using rule 50 (ref)
+    array        go to state 59
+    expression   go to state 94
+    assignexp    go to state 50
+    logicexp     go to state 51
+    equalityexp  go to state 52
+    relationexp  go to state 53
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
 
 
 State 62
 
-   51 ref: array .
+   30 whilestmt: WHILE BEGINPARAM . expression ENDPARAM BEGINSCOPE statements ENDSCOPE
 
-    $default  reduce using rule 51 (ref)
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
+
+    array        go to state 59
+    expression   go to state 95
+    assignexp    go to state 50
+    logicexp     go to state 51
+    equalityexp  go to state 52
+    relationexp  go to state 53
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
 
 
 State 63
-
-   52 array: IDENTIFIER BEGINBRACKET expression . ENDBRACKET
-
-    ENDBRACKET  shift, and go to state 98
-
-
-State 64
-
-   79 term: BEGINPARAM expression . ENDPARAM
-
-    ENDPARAM  shift, and go to state 99
-
-
-State 65
-
-   34 ifstmt: IF BEGINPARAM . expression ENDPARAM BEGINSCOPE statements ENDSCOPE
-   35       | IF BEGINPARAM . expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE
-
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
-
-    ref          go to state 50
-    array        go to state 62
-    expression   go to state 100
-    assignexp    go to state 53
-    logicexp     go to state 54
-    equalityexp  go to state 55
-    relationexp  go to state 56
-    addexp       go to state 57
-    multexp      go to state 58
-    term         go to state 59
-
-
-State 66
-
-   30 whilestmt: WHILE BEGINPARAM . expression ENDPARAM BEGINSCOPE statements ENDSCOPE
-
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
-
-    ref          go to state 50
-    array        go to state 62
-    expression   go to state 101
-    assignexp    go to state 53
-    logicexp     go to state 54
-    equalityexp  go to state 55
-    relationexp  go to state 56
-    addexp       go to state 57
-    multexp      go to state 58
-    term         go to state 59
-
-
-State 67
 
    33 returnstmt: RETURN expression .
 
     $default  reduce using rule 33 (returnstmt)
 
 
+State 64
+
+   74 multexp: NOT term .
+
+    $default  reduce using rule 74 (multexp)
+
+
+State 65
+
+   48 output: OUTPUT BEGINPARAM . expression ENDPARAM
+
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
+
+    array        go to state 59
+    expression   go to state 96
+    assignexp    go to state 50
+    logicexp     go to state 51
+    equalityexp  go to state 52
+    relationexp  go to state 53
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
+
+
+State 66
+
+   36 assignment: IDENTIFIER ASSIGN . expression
+   38           | IDENTIFIER ASSIGN . functioncall
+   39           | IDENTIFIER ASSIGN . input
+
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    INPUT       shift, and go to state 97
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 98
+
+    functioncall  go to state 99
+    input         go to state 100
+    array         go to state 59
+    expression    go to state 101
+    assignexp     go to state 50
+    logicexp      go to state 51
+    equalityexp   go to state 52
+    relationexp   go to state 53
+    addexp        go to state 54
+    multexp       go to state 55
+    term          go to state 56
+
+
+State 67
+
+   40 functioncall: IDENTIFIER BEGINPARAM . passingargs ENDPARAM
+
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
+
+    $default  reduce using rule 42 (passingargs)
+
+    passingargs  go to state 102
+    array        go to state 59
+    expression   go to state 103
+    assignexp    go to state 50
+    logicexp     go to state 51
+    equalityexp  go to state 52
+    relationexp  go to state 53
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
+
+
 State 68
 
-   77 multexp: NOT term .
+   49 array: IDENTIFIER BEGINBRACKET . expression ENDBRACKET
 
-    $default  reduce using rule 77 (multexp)
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
+
+    array        go to state 59
+    expression   go to state 104
+    assignexp    go to state 50
+    logicexp     go to state 51
+    equalityexp  go to state 52
+    relationexp  go to state 53
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
 
 
 State 69
 
-   49 io: OUTPUT BEGINPARAM . ref ENDPARAM
-
-    IDENTIFIER  shift, and go to state 61
-
-    ref    go to state 102
-    array  go to state 62
-
-
-State 70
-
-   48 io: INPUT BEGINPARAM . ENDPARAM
-
-    ENDPARAM  shift, and go to state 103
-
-
-State 71
-
-   36 assignment: IDENTIFIER ASSIGN . expression
-   38           | IDENTIFIER ASSIGN . functioncall
-   39           | IDENTIFIER ASSIGN . io
-
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    OUTPUT      shift, and go to state 33
-    INPUT       shift, and go to state 34
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 104
-
-    functioncall  go to state 105
-    io            go to state 106
-    ref           go to state 50
-    array         go to state 62
-    expression    go to state 107
-    assignexp     go to state 53
-    logicexp      go to state 54
-    equalityexp   go to state 55
-    relationexp   go to state 56
-    addexp        go to state 57
-    multexp       go to state 58
-    term          go to state 59
-
-
-State 72
-
-   40 functioncall: IDENTIFIER BEGINPARAM . passingargs ENDPARAM
-
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
-
-    $default  reduce using rule 42 (passingargs)
-
-    passingargs  go to state 108
-    ref          go to state 50
-    array        go to state 62
-    expression   go to state 109
-    assignexp    go to state 53
-    logicexp     go to state 54
-    equalityexp  go to state 55
-    relationexp  go to state 56
-    addexp       go to state 57
-    multexp      go to state 58
-    term         go to state 59
-
-
-State 73
-
-   36 assignment: IDENTIFIER . ASSIGN expression
-   38           | IDENTIFIER . ASSIGN functioncall
-   39           | IDENTIFIER . ASSIGN io
    45 declaration: type IDENTIFIER .
-   52 array: IDENTIFIER . BEGINBRACKET expression ENDBRACKET
+   49 array: IDENTIFIER . BEGINBRACKET expression ENDBRACKET
 
-    ASSIGN        shift, and go to state 71
-    BEGINBRACKET  shift, and go to state 25
+    BEGINBRACKET  shift, and go to state 68
 
     $default  reduce using rule 45 (declaration)
 
 
-State 74
+State 70
 
-   46 declaration: type assignment .
+   46 declaration: type array .
 
     $default  reduce using rule 46 (declaration)
 
 
-State 75
+State 71
 
-   37 assignment: array . ASSIGN expression
-   47 declaration: type array .
+    6 function: type func_ident BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE .
 
-    ASSIGN  shift, and go to state 79
-
-    $default  reduce using rule 47 (declaration)
+    $default  reduce using rule 6 (function)
 
 
-State 76
-
-    5 function: type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE .
-
-    $default  reduce using rule 5 (function)
-
-
-State 77
+State 72
 
    18 statements: controlstmt statements .
 
     $default  reduce using rule 18 (statements)
 
 
-State 78
+State 73
 
    17 statements: statement SEMICOLON . statements
 
     DOUBLE      shift, and go to state 1
     BOOLEAN     shift, and go to state 2
     CHAR        shift, and go to state 3
-    BEGINPARAM  shift, and go to state 26
-    IF          shift, and go to state 27
-    WHILE       shift, and go to state 28
-    CONTINUE    shift, and go to state 29
-    BREAK       shift, and go to state 30
-    RETURN      shift, and go to state 31
+    BEGINPARAM  shift, and go to state 25
+    IF          shift, and go to state 26
+    WHILE       shift, and go to state 27
+    CONTINUE    shift, and go to state 28
+    BREAK       shift, and go to state 29
+    RETURN      shift, and go to state 30
     VOID        shift, and go to state 4
-    NOT         shift, and go to state 32
-    OUTPUT      shift, and go to state 33
-    INPUT       shift, and go to state 34
-    NUMBER      shift, and go to state 35
+    NOT         shift, and go to state 31
+    OUTPUT      shift, and go to state 32
+    NUMBER      shift, and go to state 33
     INTEGER     shift, and go to state 5
-    IDENTIFIER  shift, and go to state 36
+    IDENTIFIER  shift, and go to state 34
 
     $default  reduce using rule 19 (statements)
 
-    type          go to state 37
-    statements    go to state 110
-    controlstmt   go to state 39
-    statement     go to state 40
-    whilestmt     go to state 41
-    continuestmt  go to state 42
-    breakstmt     go to state 43
-    returnstmt    go to state 44
-    ifstmt        go to state 45
-    assignment    go to state 46
-    functioncall  go to state 47
-    declaration   go to state 48
-    io            go to state 49
-    ref           go to state 50
-    array         go to state 51
-    expression    go to state 52
-    assignexp     go to state 53
-    logicexp      go to state 54
-    equalityexp   go to state 55
-    relationexp   go to state 56
-    addexp        go to state 57
-    multexp       go to state 58
-    term          go to state 59
+    type          go to state 35
+    statements    go to state 105
+    controlstmt   go to state 37
+    statement     go to state 38
+    whilestmt     go to state 39
+    continuestmt  go to state 40
+    breakstmt     go to state 41
+    returnstmt    go to state 42
+    ifstmt        go to state 43
+    assignment    go to state 44
+    functioncall  go to state 45
+    declaration   go to state 46
+    output        go to state 47
+    array         go to state 48
+    expression    go to state 49
+    assignexp     go to state 50
+    logicexp      go to state 51
+    equalityexp   go to state 52
+    relationexp   go to state 53
+    addexp        go to state 54
+    multexp       go to state 55
+    term          go to state 56
+
+
+State 74
+
+   37 assignment: array ASSIGN . expression
+
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
+
+    array        go to state 59
+    expression   go to state 106
+    assignexp    go to state 50
+    logicexp     go to state 51
+    equalityexp  go to state 52
+    relationexp  go to state 53
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
+
+
+State 75
+
+   53 logicop: AND .
+
+    $default  reduce using rule 53 (logicop)
+
+
+State 76
+
+   54 logicop: OR .
+
+    $default  reduce using rule 54 (logicop)
+
+
+State 77
+
+   51 assignexp: logicexp logicop . assignexp
+
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
+
+    array        go to state 59
+    assignexp    go to state 107
+    logicexp     go to state 51
+    equalityexp  go to state 52
+    relationexp  go to state 53
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
+
+
+State 78
+
+   57 eqop: EQ .
+
+    $default  reduce using rule 57 (eqop)
 
 
 State 79
 
-   37 assignment: array ASSIGN . expression
+   58 eqop: NE .
 
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
-
-    ref          go to state 50
-    array        go to state 62
-    expression   go to state 111
-    assignexp    go to state 53
-    logicexp     go to state 54
-    equalityexp  go to state 55
-    relationexp  go to state 56
-    addexp       go to state 57
-    multexp      go to state 58
-    term         go to state 59
+    $default  reduce using rule 58 (eqop)
 
 
 State 80
 
-   56 logicop: AND .
+   55 logicexp: equalityexp eqop . logicexp
 
-    $default  reduce using rule 56 (logicop)
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
+
+    array        go to state 59
+    logicexp     go to state 108
+    equalityexp  go to state 52
+    relationexp  go to state 53
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
 
 
 State 81
 
-   57 logicop: OR .
+   61 relop: LT .
 
-    $default  reduce using rule 57 (logicop)
+    $default  reduce using rule 61 (relop)
 
 
 State 82
 
-   54 assignexp: logicexp logicop . assignexp
+   62 relop: LTE .
 
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
-
-    ref          go to state 50
-    array        go to state 62
-    assignexp    go to state 112
-    logicexp     go to state 54
-    equalityexp  go to state 55
-    relationexp  go to state 56
-    addexp       go to state 57
-    multexp      go to state 58
-    term         go to state 59
+    $default  reduce using rule 62 (relop)
 
 
 State 83
 
-   60 eqop: EQ .
+   63 relop: GT .
 
-    $default  reduce using rule 60 (eqop)
+    $default  reduce using rule 63 (relop)
 
 
 State 84
 
-   61 eqop: NE .
-
-    $default  reduce using rule 61 (eqop)
-
-
-State 85
-
-   58 logicexp: equalityexp eqop . logicexp
-
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
-
-    ref          go to state 50
-    array        go to state 62
-    logicexp     go to state 113
-    equalityexp  go to state 55
-    relationexp  go to state 56
-    addexp       go to state 57
-    multexp      go to state 58
-    term         go to state 59
-
-
-State 86
-
-   64 relop: LT .
+   64 relop: GTE .
 
     $default  reduce using rule 64 (relop)
 
 
+State 85
+
+   59 equalityexp: relationexp relop . equalityexp
+
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
+
+    array        go to state 59
+    equalityexp  go to state 109
+    relationexp  go to state 53
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
+
+
+State 86
+
+   67 addop: ADD .
+
+    $default  reduce using rule 67 (addop)
+
+
 State 87
 
-   65 relop: LTE .
+   68 addop: SUB .
 
-    $default  reduce using rule 65 (relop)
+    $default  reduce using rule 68 (addop)
 
 
 State 88
 
-   66 relop: GT .
+   65 relationexp: addexp addop . relationexp
 
-    $default  reduce using rule 66 (relop)
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
+
+    array        go to state 59
+    relationexp  go to state 110
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
 
 
 State 89
 
-   67 relop: GTE .
+   72 multop: DIV .
 
-    $default  reduce using rule 67 (relop)
+    $default  reduce using rule 72 (multop)
 
 
 State 90
 
-   62 equalityexp: relationexp relop . equalityexp
+   71 multop: MUL .
 
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
-
-    ref          go to state 50
-    array        go to state 62
-    equalityexp  go to state 114
-    relationexp  go to state 56
-    addexp       go to state 57
-    multexp      go to state 58
-    term         go to state 59
+    $default  reduce using rule 71 (multop)
 
 
 State 91
 
-   70 addop: ADD .
+   73 multop: MOD .
 
-    $default  reduce using rule 70 (addop)
+    $default  reduce using rule 73 (multop)
 
 
 State 92
 
-   71 addop: SUB .
+   69 addexp: multexp multop . addexp
 
-    $default  reduce using rule 71 (addop)
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
+
+    array    go to state 59
+    addexp   go to state 111
+    multexp  go to state 55
+    term     go to state 56
 
 
 State 93
 
-   68 relationexp: addexp addop . relationexp
+   76 term: BEGINPARAM expression ENDPARAM .
 
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
-
-    ref          go to state 50
-    array        go to state 62
-    relationexp  go to state 115
-    addexp       go to state 57
-    multexp      go to state 58
-    term         go to state 59
+    $default  reduce using rule 76 (term)
 
 
 State 94
 
-   75 multop: DIV .
+   34 ifstmt: IF BEGINPARAM expression . ENDPARAM BEGINSCOPE statements ENDSCOPE
+   35       | IF BEGINPARAM expression . ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE
 
-    $default  reduce using rule 75 (multop)
+    ENDPARAM  shift, and go to state 112
 
 
 State 95
 
-   74 multop: MUL .
+   30 whilestmt: WHILE BEGINPARAM expression . ENDPARAM BEGINSCOPE statements ENDSCOPE
 
-    $default  reduce using rule 74 (multop)
+    ENDPARAM  shift, and go to state 113
 
 
 State 96
 
-   76 multop: MOD .
+   48 output: OUTPUT BEGINPARAM expression . ENDPARAM
 
-    $default  reduce using rule 76 (multop)
+    ENDPARAM  shift, and go to state 114
 
 
 State 97
 
-   72 addexp: multexp multop . addexp
+   47 input: INPUT . BEGINPARAM ENDPARAM
 
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
-
-    ref      go to state 50
-    array    go to state 62
-    addexp   go to state 116
-    multexp  go to state 58
-    term     go to state 59
+    BEGINPARAM  shift, and go to state 115
 
 
 State 98
 
-   52 array: IDENTIFIER BEGINBRACKET expression ENDBRACKET .
+   40 functioncall: IDENTIFIER . BEGINPARAM passingargs ENDPARAM
+   49 array: IDENTIFIER . BEGINBRACKET expression ENDBRACKET
+   78 term: IDENTIFIER .
 
-    $default  reduce using rule 52 (array)
+    BEGINPARAM    shift, and go to state 67
+    BEGINBRACKET  shift, and go to state 68
+
+    $default  reduce using rule 78 (term)
 
 
 State 99
-
-   79 term: BEGINPARAM expression ENDPARAM .
-
-    $default  reduce using rule 79 (term)
-
-
-State 100
-
-   34 ifstmt: IF BEGINPARAM expression . ENDPARAM BEGINSCOPE statements ENDSCOPE
-   35       | IF BEGINPARAM expression . ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE
-
-    ENDPARAM  shift, and go to state 117
-
-
-State 101
-
-   30 whilestmt: WHILE BEGINPARAM expression . ENDPARAM BEGINSCOPE statements ENDSCOPE
-
-    ENDPARAM  shift, and go to state 118
-
-
-State 102
-
-   49 io: OUTPUT BEGINPARAM ref . ENDPARAM
-
-    ENDPARAM  shift, and go to state 119
-
-
-State 103
-
-   48 io: INPUT BEGINPARAM ENDPARAM .
-
-    $default  reduce using rule 48 (io)
-
-
-State 104
-
-   40 functioncall: IDENTIFIER . BEGINPARAM passingargs ENDPARAM
-   50 ref: IDENTIFIER .
-   52 array: IDENTIFIER . BEGINBRACKET expression ENDBRACKET
-
-    BEGINPARAM    shift, and go to state 72
-    BEGINBRACKET  shift, and go to state 25
-
-    $default  reduce using rule 50 (ref)
-
-
-State 105
 
    38 assignment: IDENTIFIER ASSIGN functioncall .
 
     $default  reduce using rule 38 (assignment)
 
 
-State 106
+State 100
 
-   39 assignment: IDENTIFIER ASSIGN io .
+   39 assignment: IDENTIFIER ASSIGN input .
 
     $default  reduce using rule 39 (assignment)
 
 
-State 107
+State 101
 
    36 assignment: IDENTIFIER ASSIGN expression .
 
     $default  reduce using rule 36 (assignment)
 
 
-State 108
+State 102
 
    40 functioncall: IDENTIFIER BEGINPARAM passingargs . ENDPARAM
 
-    ENDPARAM  shift, and go to state 120
+    ENDPARAM  shift, and go to state 116
 
 
-State 109
+State 103
 
    41 passingargs: expression . repeat_passingargs
 
-    COMMA  shift, and go to state 121
+    COMMA  shift, and go to state 117
 
     $default  reduce using rule 44 (repeat_passingargs)
 
-    repeat_passingargs  go to state 122
+    repeat_passingargs  go to state 118
 
 
-State 110
+State 104
+
+   49 array: IDENTIFIER BEGINBRACKET expression . ENDBRACKET
+
+    ENDBRACKET  shift, and go to state 119
+
+
+State 105
 
    17 statements: statement SEMICOLON statements .
 
     $default  reduce using rule 17 (statements)
 
 
-State 111
+State 106
 
    37 assignment: array ASSIGN expression .
 
     $default  reduce using rule 37 (assignment)
 
 
+State 107
+
+   51 assignexp: logicexp logicop assignexp .
+
+    $default  reduce using rule 51 (assignexp)
+
+
+State 108
+
+   55 logicexp: equalityexp eqop logicexp .
+
+    $default  reduce using rule 55 (logicexp)
+
+
+State 109
+
+   59 equalityexp: relationexp relop equalityexp .
+
+    $default  reduce using rule 59 (equalityexp)
+
+
+State 110
+
+   65 relationexp: addexp addop relationexp .
+
+    $default  reduce using rule 65 (relationexp)
+
+
+State 111
+
+   69 addexp: multexp multop addexp .
+
+    $default  reduce using rule 69 (addexp)
+
+
 State 112
-
-   54 assignexp: logicexp logicop assignexp .
-
-    $default  reduce using rule 54 (assignexp)
-
-
-State 113
-
-   58 logicexp: equalityexp eqop logicexp .
-
-    $default  reduce using rule 58 (logicexp)
-
-
-State 114
-
-   62 equalityexp: relationexp relop equalityexp .
-
-    $default  reduce using rule 62 (equalityexp)
-
-
-State 115
-
-   68 relationexp: addexp addop relationexp .
-
-    $default  reduce using rule 68 (relationexp)
-
-
-State 116
-
-   72 addexp: multexp multop addexp .
-
-    $default  reduce using rule 72 (addexp)
-
-
-State 117
 
    34 ifstmt: IF BEGINPARAM expression ENDPARAM . BEGINSCOPE statements ENDSCOPE
    35       | IF BEGINPARAM expression ENDPARAM . BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE
 
-    BEGINSCOPE  shift, and go to state 123
+    BEGINSCOPE  shift, and go to state 120
 
 
-State 118
+State 113
 
    30 whilestmt: WHILE BEGINPARAM expression ENDPARAM . BEGINSCOPE statements ENDSCOPE
 
-    BEGINSCOPE  shift, and go to state 124
+    BEGINSCOPE  shift, and go to state 121
 
 
-State 119
+State 114
 
-   49 io: OUTPUT BEGINPARAM ref ENDPARAM .
+   48 output: OUTPUT BEGINPARAM expression ENDPARAM .
 
-    $default  reduce using rule 49 (io)
+    $default  reduce using rule 48 (output)
 
 
-State 120
+State 115
+
+   47 input: INPUT BEGINPARAM . ENDPARAM
+
+    ENDPARAM  shift, and go to state 122
+
+
+State 116
 
    40 functioncall: IDENTIFIER BEGINPARAM passingargs ENDPARAM .
 
     $default  reduce using rule 40 (functioncall)
 
 
-State 121
+State 117
 
    43 repeat_passingargs: COMMA . expression repeat_arguements
 
-    BEGINPARAM  shift, and go to state 26
-    NOT         shift, and go to state 32
-    NUMBER      shift, and go to state 35
-    IDENTIFIER  shift, and go to state 61
+    BEGINPARAM  shift, and go to state 25
+    NOT         shift, and go to state 31
+    NUMBER      shift, and go to state 33
+    IDENTIFIER  shift, and go to state 58
 
-    ref          go to state 50
-    array        go to state 62
-    expression   go to state 125
-    assignexp    go to state 53
-    logicexp     go to state 54
-    equalityexp  go to state 55
-    relationexp  go to state 56
-    addexp       go to state 57
-    multexp      go to state 58
-    term         go to state 59
+    array        go to state 59
+    expression   go to state 123
+    assignexp    go to state 50
+    logicexp     go to state 51
+    equalityexp  go to state 52
+    relationexp  go to state 53
+    addexp       go to state 54
+    multexp      go to state 55
+    term         go to state 56
 
 
-State 122
+State 118
 
    41 passingargs: expression repeat_passingargs .
 
     $default  reduce using rule 41 (passingargs)
 
 
-State 123
+State 119
+
+   49 array: IDENTIFIER BEGINBRACKET expression ENDBRACKET .
+
+    $default  reduce using rule 49 (array)
+
+
+State 120
 
    34 ifstmt: IF BEGINPARAM expression ENDPARAM BEGINSCOPE . statements ENDSCOPE
    35       | IF BEGINPARAM expression ENDPARAM BEGINSCOPE . statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE
@@ -1581,208 +1530,209 @@ State 123
     DOUBLE      shift, and go to state 1
     BOOLEAN     shift, and go to state 2
     CHAR        shift, and go to state 3
-    BEGINPARAM  shift, and go to state 26
-    IF          shift, and go to state 27
-    WHILE       shift, and go to state 28
-    CONTINUE    shift, and go to state 29
-    BREAK       shift, and go to state 30
-    RETURN      shift, and go to state 31
+    BEGINPARAM  shift, and go to state 25
+    IF          shift, and go to state 26
+    WHILE       shift, and go to state 27
+    CONTINUE    shift, and go to state 28
+    BREAK       shift, and go to state 29
+    RETURN      shift, and go to state 30
     VOID        shift, and go to state 4
-    NOT         shift, and go to state 32
-    OUTPUT      shift, and go to state 33
-    INPUT       shift, and go to state 34
-    NUMBER      shift, and go to state 35
+    NOT         shift, and go to state 31
+    OUTPUT      shift, and go to state 32
+    NUMBER      shift, and go to state 33
     INTEGER     shift, and go to state 5
-    IDENTIFIER  shift, and go to state 36
+    IDENTIFIER  shift, and go to state 34
 
     $default  reduce using rule 19 (statements)
 
-    type          go to state 37
-    statements    go to state 126
-    controlstmt   go to state 39
-    statement     go to state 40
-    whilestmt     go to state 41
-    continuestmt  go to state 42
-    breakstmt     go to state 43
-    returnstmt    go to state 44
-    ifstmt        go to state 45
-    assignment    go to state 46
-    functioncall  go to state 47
-    declaration   go to state 48
-    io            go to state 49
-    ref           go to state 50
-    array         go to state 51
-    expression    go to state 52
-    assignexp     go to state 53
-    logicexp      go to state 54
-    equalityexp   go to state 55
-    relationexp   go to state 56
-    addexp        go to state 57
-    multexp       go to state 58
-    term          go to state 59
+    type          go to state 35
+    statements    go to state 124
+    controlstmt   go to state 37
+    statement     go to state 38
+    whilestmt     go to state 39
+    continuestmt  go to state 40
+    breakstmt     go to state 41
+    returnstmt    go to state 42
+    ifstmt        go to state 43
+    assignment    go to state 44
+    functioncall  go to state 45
+    declaration   go to state 46
+    output        go to state 47
+    array         go to state 48
+    expression    go to state 49
+    assignexp     go to state 50
+    logicexp      go to state 51
+    equalityexp   go to state 52
+    relationexp   go to state 53
+    addexp        go to state 54
+    multexp       go to state 55
+    term          go to state 56
 
 
-State 124
+State 121
 
    30 whilestmt: WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE . statements ENDSCOPE
 
     DOUBLE      shift, and go to state 1
     BOOLEAN     shift, and go to state 2
     CHAR        shift, and go to state 3
-    BEGINPARAM  shift, and go to state 26
-    IF          shift, and go to state 27
-    WHILE       shift, and go to state 28
-    CONTINUE    shift, and go to state 29
-    BREAK       shift, and go to state 30
-    RETURN      shift, and go to state 31
+    BEGINPARAM  shift, and go to state 25
+    IF          shift, and go to state 26
+    WHILE       shift, and go to state 27
+    CONTINUE    shift, and go to state 28
+    BREAK       shift, and go to state 29
+    RETURN      shift, and go to state 30
     VOID        shift, and go to state 4
-    NOT         shift, and go to state 32
-    OUTPUT      shift, and go to state 33
-    INPUT       shift, and go to state 34
-    NUMBER      shift, and go to state 35
+    NOT         shift, and go to state 31
+    OUTPUT      shift, and go to state 32
+    NUMBER      shift, and go to state 33
     INTEGER     shift, and go to state 5
-    IDENTIFIER  shift, and go to state 36
+    IDENTIFIER  shift, and go to state 34
 
     $default  reduce using rule 19 (statements)
 
-    type          go to state 37
-    statements    go to state 127
-    controlstmt   go to state 39
-    statement     go to state 40
-    whilestmt     go to state 41
-    continuestmt  go to state 42
-    breakstmt     go to state 43
-    returnstmt    go to state 44
-    ifstmt        go to state 45
-    assignment    go to state 46
-    functioncall  go to state 47
-    declaration   go to state 48
-    io            go to state 49
-    ref           go to state 50
-    array         go to state 51
-    expression    go to state 52
-    assignexp     go to state 53
-    logicexp      go to state 54
-    equalityexp   go to state 55
-    relationexp   go to state 56
-    addexp        go to state 57
-    multexp       go to state 58
-    term          go to state 59
+    type          go to state 35
+    statements    go to state 125
+    controlstmt   go to state 37
+    statement     go to state 38
+    whilestmt     go to state 39
+    continuestmt  go to state 40
+    breakstmt     go to state 41
+    returnstmt    go to state 42
+    ifstmt        go to state 43
+    assignment    go to state 44
+    functioncall  go to state 45
+    declaration   go to state 46
+    output        go to state 47
+    array         go to state 48
+    expression    go to state 49
+    assignexp     go to state 50
+    logicexp      go to state 51
+    equalityexp   go to state 52
+    relationexp   go to state 53
+    addexp        go to state 54
+    multexp       go to state 55
+    term          go to state 56
 
 
-State 125
+State 122
+
+   47 input: INPUT BEGINPARAM ENDPARAM .
+
+    $default  reduce using rule 47 (input)
+
+
+State 123
 
    43 repeat_passingargs: COMMA expression . repeat_arguements
 
-    COMMA  shift, and go to state 19
+    COMMA  shift, and go to state 20
 
-    $default  reduce using rule 9 (repeat_arguements)
+    $default  reduce using rule 10 (repeat_arguements)
 
-    repeat_arguements  go to state 128
+    repeat_arguements  go to state 126
 
 
-State 126
+State 124
 
    34 ifstmt: IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements . ENDSCOPE
    35       | IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements . ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE
 
-    ENDSCOPE  shift, and go to state 129
+    ENDSCOPE  shift, and go to state 127
 
 
-State 127
+State 125
 
    30 whilestmt: WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements . ENDSCOPE
 
-    ENDSCOPE  shift, and go to state 130
+    ENDSCOPE  shift, and go to state 128
 
 
-State 128
+State 126
 
    43 repeat_passingargs: COMMA expression repeat_arguements .
 
     $default  reduce using rule 43 (repeat_passingargs)
 
 
-State 129
+State 127
 
    34 ifstmt: IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE .
    35       | IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE . ELSE BEGINSCOPE statements ENDSCOPE
 
-    ELSE  shift, and go to state 131
+    ELSE  shift, and go to state 129
 
     $default  reduce using rule 34 (ifstmt)
 
 
-State 130
+State 128
 
    30 whilestmt: WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE .
 
     $default  reduce using rule 30 (whilestmt)
 
 
-State 131
+State 129
 
    35 ifstmt: IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE . BEGINSCOPE statements ENDSCOPE
 
-    BEGINSCOPE  shift, and go to state 132
+    BEGINSCOPE  shift, and go to state 130
 
 
-State 132
+State 130
 
    35 ifstmt: IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE . statements ENDSCOPE
 
     DOUBLE      shift, and go to state 1
     BOOLEAN     shift, and go to state 2
     CHAR        shift, and go to state 3
-    BEGINPARAM  shift, and go to state 26
-    IF          shift, and go to state 27
-    WHILE       shift, and go to state 28
-    CONTINUE    shift, and go to state 29
-    BREAK       shift, and go to state 30
-    RETURN      shift, and go to state 31
+    BEGINPARAM  shift, and go to state 25
+    IF          shift, and go to state 26
+    WHILE       shift, and go to state 27
+    CONTINUE    shift, and go to state 28
+    BREAK       shift, and go to state 29
+    RETURN      shift, and go to state 30
     VOID        shift, and go to state 4
-    NOT         shift, and go to state 32
-    OUTPUT      shift, and go to state 33
-    INPUT       shift, and go to state 34
-    NUMBER      shift, and go to state 35
+    NOT         shift, and go to state 31
+    OUTPUT      shift, and go to state 32
+    NUMBER      shift, and go to state 33
     INTEGER     shift, and go to state 5
-    IDENTIFIER  shift, and go to state 36
+    IDENTIFIER  shift, and go to state 34
 
     $default  reduce using rule 19 (statements)
 
-    type          go to state 37
-    statements    go to state 133
-    controlstmt   go to state 39
-    statement     go to state 40
-    whilestmt     go to state 41
-    continuestmt  go to state 42
-    breakstmt     go to state 43
-    returnstmt    go to state 44
-    ifstmt        go to state 45
-    assignment    go to state 46
-    functioncall  go to state 47
-    declaration   go to state 48
-    io            go to state 49
-    ref           go to state 50
-    array         go to state 51
-    expression    go to state 52
-    assignexp     go to state 53
-    logicexp      go to state 54
-    equalityexp   go to state 55
-    relationexp   go to state 56
-    addexp        go to state 57
-    multexp       go to state 58
-    term          go to state 59
+    type          go to state 35
+    statements    go to state 131
+    controlstmt   go to state 37
+    statement     go to state 38
+    whilestmt     go to state 39
+    continuestmt  go to state 40
+    breakstmt     go to state 41
+    returnstmt    go to state 42
+    ifstmt        go to state 43
+    assignment    go to state 44
+    functioncall  go to state 45
+    declaration   go to state 46
+    output        go to state 47
+    array         go to state 48
+    expression    go to state 49
+    assignexp     go to state 50
+    logicexp      go to state 51
+    equalityexp   go to state 52
+    relationexp   go to state 53
+    addexp        go to state 54
+    multexp       go to state 55
+    term          go to state 56
 
 
-State 133
+State 131
 
    35 ifstmt: IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements . ENDSCOPE
 
-    ENDSCOPE  shift, and go to state 134
+    ENDSCOPE  shift, and go to state 132
 
 
-State 134
+State 132
 
    35 ifstmt: IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE .
 

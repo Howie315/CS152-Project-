@@ -16,9 +16,19 @@ int count_params = 0;
 
 enum Type { Integer, Array, Boolean, Double, Character};
 
+/*
+
+      Integer = 0
+      Array = 1
+      Boolean = 2
+      Double = 3
+      Character = 4
+
+*/
+
 struct Symbol {
   std::string name;
-  Type type;
+  int type;
 };
 
 struct Function {
@@ -45,7 +55,7 @@ Function *get_function() {
 // grab the most recent function, and linear search to
 // find the symbol you are looking for.
 // you may want to extend "find" to handle different types of "Integer" vs "Array"
-bool find(std::string &value, Type t) {
+bool find(std::string &value, int t) {
   Function *f = get_function();
   for(int i=0; i < f->declarations.size(); i++) {
     Symbol *s = &f->declarations[i];
@@ -79,7 +89,7 @@ void add_function_to_symbol_table(std::string &value) {
 
 // when you see a symbol declaration inside the grammar, add
 // the symbol name as well as some type information to the symbol table
-void add_variable_to_symbol_table(std::string &value, Type t) {
+void add_variable_to_symbol_table(std::string &value, int t) {
   Symbol s;
   s.name = value;
   s.type = t;
@@ -100,6 +110,11 @@ std::string create_temp()
       std::string value = "_temp" + to_string(num);
       num += 1;
       return value;
+}
+
+std::string decl_temp_code(std::string &temp)
+{
+      return std::string(". ") + temp + std::string("\n");
 }
 
 void print_symbol_table(void) {
@@ -130,24 +145,28 @@ void print_symbol_table(void) {
 %token ASSIGN ADD SUB DIV MUL MOD EQ LT LTE GT GTE NE
 %token FUNCTION BEGINSCOPE ENDSCOPE BEGINPARAM ENDPARAM BEGINBRACKET ENDBRACKET IF ELSE FOR WHILE CONTINUE BREAK TRUE FALSE RETURN VOID NOT AND OR SEMICOLON COMMA
 %token OUTPUT INPUT
-%token NUMBER DECIMAL
+%token <op_val> NUMBER DECIMAL
 
 %token <op_val> INTEGER
 %token <op_val> IDENTIFIER
 
-%type <code_node> symbol
-%type <code_node> function_ident
+%type <code_node> expression assignment functioncall
 %type <code_node> functions function
 %type <code_node> arguement arguements repeat_arguements
-%type <code_node> statement statements array
-
+%type <code_node> statement statements
+%type <code_node> output input
+%type <code_node> returnstmt declaration array
+%type <code_node> func_ident
+%type <code_node> passingargs repeat_passingargs
+%type <code_node> logicop eqop relop addop multop multexp term assignexp logicexp relationexp addexp equalityexp
+%type <int_val> type
 %%
 
 prog_start:
       functions 
       {
             CodeNode *code_node = $1;
-            //printf("%s\n", code_node->code.c_str());
+            printf("%s\n", code_node->code.c_str());
       }
 |     %empty    { printf("No Content In File!"); }
 ;
@@ -168,33 +187,41 @@ functions:
       }
 ;
 
+func_ident:
+      FUNCTION IDENTIFIER 
+      {
+            CodeNode *node = new CodeNode;
+            node->name = $2;
+
+            node->code = "func ";
+            node->code += node->name;
+
+            //  add to function table
+            std::string id = $2;
+
+            if (symbol_table.size() == 0){
+                  add_function_to_symbol_table(id);
+            } else {
+                  add_function_to_symbol_table(id);
+            }
+
+            $$ = node;
+      }
+;
 function:
-      type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE      
+      type func_ident BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE      
       {
             count_params = 0;
             //  create start of function
             CodeNode *node = new CodeNode;
-            CodeNode *arg_node = $5;
-            CodeNode *state_node = $8;
-            node->code = "func ";
-            node->code += $3;
-
-            node->code += "\n";
+            CodeNode *ident_node = $2;
+            node->code += ident_node->code + "\n";
+            CodeNode *arg_node = $4;
+            CodeNode *state_node = $7;
             node->code += arg_node->code;
-            printf(&node->code[0]);
-
-
-
-
-
-
-
-            //  add to function table
-            std::string id = $3;
-            add_function_to_symbol_table(id); 
             
             //  Add statement code
-            //node->code += state_node->code;
+            node->code += state_node->code;
 
             node->code += "endfunc\n";
 
@@ -242,185 +269,636 @@ arguement:
       { 
             CodeNode* node = new CodeNode;
             std::string var_name($2);
+
+            // Check if symbol already exists
+            if (find(var_name, $1)) {
+                  yyerror("Error: Name already exists.");
+            } else {
+                  // If it doesn't exist, add to symbol table
+                  add_variable_to_symbol_table(var_name, $1);
+            }
+
             node->code = ". " + var_name + "\n";
             node->code += "= " + var_name + ", $" + to_string(count_params) + "\n"; count_params++;
 
             $$ = node;
-      }
-|     type array                          
-      {  
-            CodeNode* node = new CodeNode;
-            //CodeNode* arr_node = $2;
-            //node->code = ".[] " + var_name + "\n";
-            //node->code += "= " + var_name + ", $" + to_string(count_params) + "\n"; count_params++;
-            $$ = node;
+            //  Type array below, but not sure if we are gonna use it
       }
 ;
 
 type:
-      VOID      {  }
-|     INTEGER   {  }
-|     BOOLEAN   {  }
-|     DOUBLE    {  }
-|     CHAR      {  }
+      VOID        
+      { 
+            $$ = 0;
+      }
+|     INTEGER     
+      {
+            $$ = 1;
+      }
+|     BOOLEAN     
+      { 
+            $$ = 2;
+      }
+|     DOUBLE    
+      { 
+            $$ = 3;
+      }
+|     CHAR      
+      { 
+            $$ = 4; 
+      }
 ;
 
 statements:
       statement SEMICOLON statements  
       {  
-            
+            //  SEGFAULT HERE from uninit
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $3;
+            CodeNode *node = new CodeNode;
+            node->code = node1->code + node2->code;
+
+            $$ = node;
       }
-|      controlstmt statements         {  }
-|     %empty                          {  }
+|     controlstmt statements         
+      { 
+            // TODO: Implement later  
+      }
+|     %empty                          
+      {
+            CodeNode *node = new CodeNode;
+            $$ = node;
+      }
 ;
 
 controlstmt:
-      whilestmt     {  }
-|     ifstmt        {  }
+      whilestmt     
+      { 
+            // TODO: Implement later  
+      }
+|     ifstmt        
+      { 
+            // TODO: Implement later  
+      }
 ;
 
 statement: 
-      returnstmt    {  }
-|     assignment    {  }
-|     functioncall  {  }
-|     declaration   {  }
-|     io            {  }
-|     continuestmt  {  }
-|     breakstmt     {  }
-|     expression    {  }
+      returnstmt    
+      {
+            //  These all return other code that is processed by the other nodes.
+            //  Code will be identical amoungst all here.
+            //CodeNode *node = $1; $$ = node;
+      }
+|     assignment    
+      { 
+            //CodeNode *node = $1; $$ = node;  
+      }
+|     functioncall
+      { 
+            //CodeNode *node = $1; $$ = node;  
+      }
+|     declaration
+      { 
+            CodeNode *node = $1; 
+            $$ = node;  
+      }
+|     output
+      { 
+            CodeNode *node = $1; $$ = node;  
+      }
+|     continuestmt  
+      { 
+            // TODO: Implement later 
+      }
+|     breakstmt     
+      { 
+            // TODO: Implement later 
+      }
+|     expression
+      { 
+            //CodeNode *node = $1; $$ = node;  
+      }
 ;
 
 whilestmt:
-     WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE      {  }
+     WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE      
+      {
+            // TODO: Implement later 
+      }
 ;
 
 continuestmt:
-   CONTINUE                         {  }
+   CONTINUE                         
+      { 
+            // TODO: Implement later 
+      }
 ;
 
 breakstmt:
-   BREAK                            {  }
+   BREAK                            
+   { 
+      // TODO: Implement later 
+   }
 ;
 
 returnstmt: 
-      RETURN expression             {  }
+      RETURN expression             
+      {  
+            CodeNode *node = new CodeNode;
+            CodeNode *exp_node = $2;
+
+            //  Outcome of expression will be stored in "->name"
+            //  Code for expression stored in "->code"
+            //  First, add code that creates the expression
+            node->code = "";
+            node->code += exp_node->code;
+
+            // Then add return code
+            node->code += "ret ";
+            node->code += exp_node->name;
+            node->code += "\n";
+
+            //  Return
+            $$ = node;
+      }
 ;
 
 ifstmt:
-      IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE                                      {  }
-|     IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE  {  }
+      IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE                                      
+      { 
+            // TODO: Implement later 
+      }
+|     IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE  
+      { 
+            // TODO: Implement later 
+      }
 ;
 
 assignment: 
-      IDENTIFIER ASSIGN expression                    {  }
+      IDENTIFIER ASSIGN expression                    
+      {
+            //  Check if ID is in table first 
+            std::string id = $1;
+            if(!find_ambiguous(id))
+            {
+                  yyerror("Symbol not found in symbol table!");
+            }
+
+            CodeNode *node = new CodeNode;
+            CodeNode *exp_node = $3;
+
+            //  Outcome of expression will be stored in ->name
+            //  First, add code that creates the expression
+            node->code = "";
+            node->code += exp_node->code;
+
+            // Then add the assignment;
+            node->code += "= ";
+            node->code += id;
+            node->code += ", ";
+            node->code += exp_node->name;
+            node->code += "\n";
+
+            //  Return
+            $$ = node;
+      }
 |     array ASSIGN expression                         {  }
-|     IDENTIFIER ASSIGN functioncall                  {  }
-|     IDENTIFIER ASSIGN io                            {  }
+|     IDENTIFIER ASSIGN functioncall                  
+      {  
+            //  Check if ID is in table first 
+            std::string id = $1;
+            if(!find_ambiguous(id))
+            {
+                  yyerror("Symbol not found in symbol table!");
+            }
+
+            //  Add functioncall code
+            CodeNode *node = new CodeNode;
+            CodeNode *call_node = $3;
+
+            node->code = "";
+            node->code += call_node->code;
+
+            $$ = node;
+
+
+      }
+|     IDENTIFIER ASSIGN input                         
+      {  
+            CodeNode *node = new CodeNode;
+            CodeNode *input_node = $3;
+
+            //  Get identifier
+            std::string id = $1;
+
+            //  Check if exists
+            if(!find_ambiguous(id))
+            {
+                  yyerror("Symbol not found in symbol table!");
+            }
+
+            //  Add identifier to code
+            node->code = input_node->code;
+            node->code += id;
+            node->code += "\n";
+            
+            //  Return
+            $$ = node;
+      }
 ;
 
 functioncall:
-      IDENTIFIER BEGINPARAM passingargs ENDPARAM      {  }
+      IDENTIFIER BEGINPARAM passingargs ENDPARAM      
+      {
+            CodeNode *node = new CodeNode;
+
+      }
 ;
 
 passingargs:
-      expression repeat_passingargs             {  }
-|     %empty                                    {  }
+      expression repeat_passingargs             
+      {
+            
+      }
+|     %empty                                    
+      {  
+            CodeNode *node = new CodeNode;
+            $$ = node;
+      }
 
 repeat_passingargs:
       COMMA expression repeat_arguements        {  }
-|     %empty                                    {  }
+|     %empty                                    
+      {  
+            CodeNode *node = new CodeNode;
+            $$ = node;
+      }
 
 declaration:
-      type IDENTIFIER                           {  }
-|     type assignment                           {  }
-|     type array                                {  }
+      type IDENTIFIER                           
+      {
+            CodeNode *node = new CodeNode;
+
+            // Get Identifier
+            std::string id = $2;
+
+            // Add to symbol table
+            add_variable_to_symbol_table(id, 0);
+
+            //    Create Declaration 
+            node->code = ". ";
+            node->code += id;
+            node->code += "\n";
+
+            //  Return
+            $$ = node;
+      }
+|     type array                               
+      {     
+            
+      }
 ;
 
-io:
-      INPUT BEGINPARAM ENDPARAM                 {  }
-|     OUTPUT BEGINPARAM ref ENDPARAM            {  }
+input:
+      INPUT BEGINPARAM ENDPARAM               
+      {
+            CodeNode *node = new CodeNode;
+
+            //  Construct code here
+            node->code = "";
+            node->code += ".< ";
+
+            //  Return
+            $$ = node;
+            
+
+      }
 ;
 
-ref:
-      IDENTIFIER                                {  }
-|     array                                     {  }
+output:
+     OUTPUT BEGINPARAM expression ENDPARAM            
+     {
+            CodeNode *node = new CodeNode;
+            //CodeNode *ref_node = $3;
+            node->code = "";
+            node->code += ".> ";
+            //node->code += ref_node->name;
+            node->code += "\n";
+
+            $$ = node;
+     }
 ;
 
 array:
-      IDENTIFIER BEGINBRACKET expression ENDBRACKET {  }
+      IDENTIFIER BEGINBRACKET expression ENDBRACKET 
+      {  
+            CodeNode *node = new CodeNode;
+
+            //  Add identifier string to code in node
+            node->code = $1;
+
+            // "id "
+      }
 ;
 
+
 expression:
-      assignexp                           {  }
+      assignexp                           
+      {   
+            CodeNode *node = new CodeNode;
+            node = $1;
+            $$ = node;
+      }
 ;
 
 assignexp:
-      logicexp logicop assignexp          {  }
-|     logicexp                            {  }
+      logicexp logicop assignexp          
+      {  
+            std::string temp = create_temp();
+            CodeNode *node = new CodeNode;
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $3;
+            CodeNode *op = $2;
+
+            node->code = node1->code + node2->code + decl_temp_code(temp);
+            node->code += op->code + std::string(" ") + temp + std::string(", ");
+            node->code += node1->name + std::string(", ") + node2->name + std::string("\n");
+            node->name = temp;
+            $$ = node;
+
+            //temp 1 = node1.code
+            //temp_2 = node2.code 
+            //node.code = node1.code + node2.code + declare(temp_0)
+            //node.code = + temp_0, temp_1, temp_2
+
+      }
+|     logicexp                            
+      { 
+            CodeNode* node = $1;
+            $$ = node;
+      }
 ;
 
 logicop:
-      AND                                 {  }
-|     OR                                  {  }
+      AND                                 
+      {  
+            CodeNode* node = new CodeNode;
+            node->code = "&& ";
+
+            $$ = node;
+      }
+|     OR                                  
+      {  
+            CodeNode* node = new CodeNode;
+            node->code = "|| ";
+
+            $$ = node;
+      }
 ;
 
 logicexp:
-      equalityexp eqop logicexp           {  }
-|     equalityexp                         {  }
+      equalityexp eqop logicexp           
+      {  
+            std::string temp = create_temp();
+            CodeNode *node = new CodeNode;
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $3;
+            CodeNode *op = $2;
+
+            node->code = node1->code + node2->code + decl_temp_code(temp);
+            node->code += op->code + std::string(" ") + temp + std::string(", ");
+            node->code += node1->name + std::string(", ") + node2->name + std::string("\n");
+            node->name = temp;
+            $$ = node;
+      }
+|     equalityexp                         
+      {  
+            CodeNode* node = $1;
+            $$ = node;
+      }
 ;
 
 eqop:
-      EQ                                  {  }
-|     NE                                  {  }
+      EQ                                  
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "== ";
+
+            $$ = node;
+            
+      }
+|     NE                                  
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "!= ";
+      }
 ;
 
 equalityexp:
-      relationexp relop equalityexp       {  }
-|     relationexp                         {  }
+      relationexp relop equalityexp       
+      {  
+            std::string temp = create_temp();
+            CodeNode *node = new CodeNode;
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $3;
+            CodeNode *op = $2;
+
+            node->code = node1->code + node2->code + decl_temp_code(temp);
+            node->code += op->code + std::string(" ") + temp + std::string(", ");
+            node->code += node1->name + std::string(", ") + node2->name + std::string("\n");
+            node->name = temp;
+            $$ = node;
+      }
+|     relationexp                         
+      {  
+            CodeNode* node = $1;
+            $$ = node;
+      }
 ;
 
 relop:
-      LT                                  {  }
-|     LTE                                 {  }
-|     GT                                  {  }
-|     GTE                                 {  }
+      LT                                  
+      {  
+            CodeNode* node = new CodeNode;
+            node->code = "< ";
+
+            $$ = node;
+      }
+|     LTE                                 
+      {  
+            CodeNode* node = new CodeNode;
+            node->code = "<= ";
+
+            $$ = node;
+      }
+|     GT                                  
+      {  
+            CodeNode* node = new CodeNode;
+            node->code = "> ";
+
+            $$ = node;
+      }
+|     GTE                                 
+      {  
+            CodeNode* node = new CodeNode;
+            node->code = ">= ";
+
+            $$ = node;
+      }
 ;
 
 relationexp:
-      addexp addop relationexp            {  }
-|     addexp                              {  }
+      addexp addop relationexp            
+      {
+            std::string temp = create_temp();
+            CodeNode *node = new CodeNode;
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $3;
+            CodeNode *op = $2;
+
+            node->code = node1->code + node2->code + decl_temp_code(temp);
+            node->code += op->code + std::string(" ") + temp + std::string(", ");
+            node->code += node1->name + std::string(", ") + node2->name + std::string("\n");
+            node->name = temp;
+            $$ = node;
+      }
+|     addexp                              
+      {
+            CodeNode* node = $1;
+            $$ = node;
+      }
 ;
 
 addop:
-      ADD                                 {  }
-|     SUB                                 {  }
+      ADD
+      {
+            CodeNode* node = new CodeNode;
+            node->code = "+ ";
+
+            $$ = node;
+      }
+|     SUB                                 
+      {
+            CodeNode* node = new CodeNode;
+            node->code = "- ";
+
+            $$ = node;
+      }
 ;
 
 addexp:
-      multexp multop addexp               {  }
-|     multexp                             {  }
+      multexp multop addexp               
+      {  
+            std::string temp = create_temp();
+            CodeNode *node = new CodeNode;
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $3;
+            CodeNode *op = $2;
+
+            node->code = node1->code + node2->code + decl_temp_code(temp);
+            node->code += op->code + std::string(" ") + temp + std::string(", ");
+            node->code += node1->name + std::string(", ") + node2->name + std::string("\n");
+            node->name = temp;
+            $$ = node;
+      }
+|     multexp                             
+      { 
+            CodeNode* node = $1;
+
+            $$ = node;
+      }
 ;
 
 multop:
-      MUL                                 {  }
-|     DIV                                 {  }
-|     MOD                                 {  }
+      MUL                                 
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "* ";
+
+            $$ = node;
+      }
+|     DIV                                 
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "/ ";
+
+            $$ = node;
+      }
+|     MOD                                 
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "% ";
+
+            $$ = node;
+      }
 ;
 multexp: 
-      NOT term                            {  }
-|     term                                {  }
+      NOT term
+      { 
+            CodeNode* node = new CodeNode;
+            CodeNode* term_node = $2;
+
+            node->code += term_node->code;
+            node->code += "! ";
+            node->code += term_node->name;
+            node->code += ", ";
+            node->code += term_node->name;
+            node->code += "\n";
+
+            node->name = term_node->name;
+
+            $$ = node;
+      }
+|     term                                
+      {  
+            CodeNode* node = new CodeNode;
+            CodeNode* term_node = $1;
+
+            node->code += term_node->code;
+            node->name = term_node->name;
+
+
+            $$ = node;
+      }
 ;
 
 term:
-      BEGINPARAM expression ENDPARAM      {  }
-|     NUMBER                              {  }
-|     ref                                 {  }
+      BEGINPARAM expression ENDPARAM      
+      { 
+            CodeNode* node = new CodeNode;
+            CodeNode* exp_node = $2;
+            node->code = exp_node->code;
+
+            $$ = node;
+      }
+|     NUMBER                              
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "";
+            node->name = $1;
+
+            $$ = node;
+      }
+|     IDENTIFIER                          
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "";
+            node->name = $1;
+
+            $$ = node;
+      }
+|     array                               
+      { 
+
+      }
 ; 
+
 %%
 
 int main()
 {
   yyparse();
+  print_symbol_table();
   return 0;
 }
 
