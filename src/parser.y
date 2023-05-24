@@ -161,7 +161,6 @@ void print_symbol_table(void) {
 %type <code_node> passingargs repeat_passingargs
 %type <code_node> logicop eqop relop addop multop multexp term assignexp logicexp relationexp addexp equalityexp
 %type <int_val> type
-%type <exp_node> ident_extend
 %%
 
 prog_start:
@@ -451,6 +450,32 @@ assignment:
 
             $$ = node;
       }
+|     IDENTIFIER BEGINBRACKET expression ENDBRACKET ASSIGN input 
+      {
+            CodeNode *node = new CodeNode;
+            CodeNode *input_node = $6;
+             CodeNode *expIndex_node = $3;
+
+            //  Get identifier
+            std::string id = $1;
+
+            //  Check if exists
+            if(!find_ambiguous(id))
+            {
+                  yyerror("Symbol not found in symbol table!");
+            }
+
+            node->code = "";
+            node->code += expIndex_node->code;
+            node->code += ".[]< ";
+            node->code += id;
+            node->code += ", ";
+            node->code += expIndex_node->name;
+            node->code += "\n";
+            
+            //  Return
+            $$ = node;
+      } 
 |     IDENTIFIER ASSIGN IDENTIFIER BEGINBRACKET expression ENDBRACKET
       {
             // dst = src[index]
@@ -684,9 +709,8 @@ input:
 
             //  Return
             $$ = node;
-            
-
       }
+
 ;
 
 output:
@@ -699,6 +723,21 @@ output:
             node->code += exp_node->code;
             node->code += ".> ";
             node->code += exp_node->name;
+            node->code += "\n";
+
+            $$ = node;
+     }
+|     OUTPUT BEGINPARAM IDENTIFIER BEGINBRACKET expression ENDBRACKET ENDPARAM            
+     {
+            CodeNode *node = new CodeNode;
+            CodeNode *expIndex_node = $5;
+            std::string id = $3;
+
+            node->code = expIndex_node->code;
+            node->code += ".[]> ";
+            node->code += id;
+            node->code += ", ";
+            node->code += expIndex_node->name;
             node->code += "\n";
 
             $$ = node;
@@ -1010,17 +1049,11 @@ term:
 |     IDENTIFIER             
       { 
             CodeNode* node = new CodeNode;
-            ExpNode *exp = new ExpNode;
             std::string id = $1;
-            node->name = id;
             node->name = id;
 
             $$ = node;
       }
-|      functioncall
-{
-      
-}
 ; 
 
 %%
