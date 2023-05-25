@@ -16,26 +16,7 @@ BEGINSCOPE
 IDENTIFIER: a
 NUMBER: 20
 IDENTIFIER: b
-symbol table:
---------------------
-function: add
-  locals: a
-  locals: b
-function: main
-  locals: a
-  locals: b
---------------------
 IDENTIFIER: c
-symbol table:
---------------------
-function: add
-  locals: a
-  locals: b
-function: main
-  locals: a
-  locals: b
-  locals: c
---------------------
 IDENTIFIER: b
 BEGINPARAM
 ENDPARAM

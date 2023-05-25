@@ -12,5 +12,5 @@ struct CodeNode {
 struct ExpNode {
   std::string code;
   std::string name;
-  int type;
+  int side; //0:Left 1:Right
 };

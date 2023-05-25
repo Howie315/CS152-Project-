@@ -1,22 +1,28 @@
+int func add(int a, int b) {
+	return a + b;
+}
+
 void func main() 
 {
-	int a[20];
+	int a[-1];
 	int b;
 	int c;
 
-	b = 3;
-	c = 5;
-	a[0] = b + c;
-	defecate(a[0]);
+	b = intake();
+	c = intake();
+	a[0] = add(b, c);
+	defecate(a[[0]]);
 
 	a[1] = 100;
-	defecate(a[1]);
+	defecate(a[[1]]);
 
 	a[2] = 200;
-	defecate(a[2]);
+	defecate(a[[2]]);
 
-	a[3] = a[0] * (a[1] + c);
-	defecate(a[3]);
+	a[3] = a[[0]] * (a[[1]] + c);
+	defecate(a[[3]]);
 
+	a[4] = intake();
+	defecate(a[[4]]);
 
 }

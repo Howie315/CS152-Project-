@@ -14,6 +14,8 @@ int numberToken;
 int  count_names = 0;
 int count_params = 0;
 
+bool main_exists = false;
+
 enum Type { Integer, Array, Boolean, Double, Character};
 
 /*
@@ -37,6 +39,26 @@ struct Function {
 };
 
 std::vector <Function> symbol_table;
+
+bool FindFunction(std::vector<Function> vec, std::string name) {
+      for (unsigned i = 0; i < vec.size(); i++) {
+            if (name == vec[i].name) {
+                  return true;
+            }
+      }
+      return false;
+}
+
+std::vector<std::string> reservedKeywords;
+
+bool CheckReservedKeywords(std::string name) {
+      for (unsigned i = 0; i < reservedKeywords.size(); i++) {
+            if (reservedKeywords[i] == name) {
+                  return false;
+            }
+      }
+      return true;
+}
 
 // remember that Bison is a bottom up parser: that it parses leaf nodes first before
 // parsing the parent nodes. So control flow begins at the leaf grammar nodes
@@ -112,6 +134,13 @@ std::string create_temp()
       return value;
 }
 
+bool check_side()
+{
+      static bool side = true;
+      side != side;
+      return side;
+}
+
 std::string decl_temp_code(std::string &temp)
 {
       return std::string(". ") + temp + std::string("\n");
@@ -151,13 +180,13 @@ void print_symbol_table(void) {
 %token <op_val> INTEGER
 %token <op_val> IDENTIFIER
 
-%type <code_node> expression assignment functioncall
+%type <code_node> expression functioncall
 %type <code_node> functions function array_declaration 
 %type <code_node> arguement arguements repeat_arguements
 %type <code_node> statement statements
 %type <code_node> output input
 %type <code_node> returnstmt declaration 
-%type <code_node> func_ident
+%type <code_node> func_ident 
 %type <code_node> passingargs repeat_passingargs
 %type <code_node> logicop eqop relop addop multop multexp term assignexp logicexp relationexp addexp equalityexp
 %type <int_val> type
@@ -167,6 +196,11 @@ prog_start:
       functions 
       {
             CodeNode *code_node = $1;
+
+            if (!main_exists) {
+                  yyerror("Error: Did not define a main function.");
+            }
+
             printf("%s\n", code_node->code.c_str());
       }
 |     %empty    { printf("No Content In File!"); }
@@ -199,6 +233,10 @@ func_ident:
 
             //  add to function table
             std::string id = $2;
+
+            if (id == "main") {
+                  main_exists = true;
+            }
 
             if (symbol_table.size() == 0){
                   add_function_to_symbol_table(id);
@@ -348,14 +386,6 @@ statement:
       {
             CodeNode* node = $1; $$ = node;
       }
-|     assignment    
-      { 
-            CodeNode *node = $1; $$ = node;  
-      }
-|     functioncall
-      { 
-            CodeNode *node = $1; $$ = node;  
-      }
 |     declaration
       { 
             CodeNode *node = $1; $$ = node;  
@@ -374,7 +404,7 @@ statement:
       }
 |     expression
       { 
-            //CodeNode *node = $1; $$ = node;  
+            CodeNode *node = $1; $$ = node;  
       }
 ;
 
@@ -432,149 +462,16 @@ ifstmt:
       }
 ;
 
-assignment:
-      IDENTIFIER BEGINBRACKET expression ENDBRACKET ASSIGN expression 
-      {
-            // dst[index] = src
-            // []= dst, index, src
-
-            CodeNode *node = new CodeNode;
-            CodeNode *expIndex_node = $3;
-            CodeNode *expSrc_node = $6;
-
-            node->code = "";
-            node->code += expIndex_node->code + expSrc_node->code;
-            node->code += "[]= " + std::string($1) + ", ";
-            node->code += expIndex_node->name + ", ";
-            node->code += expSrc_node->name + "\n";
-
-            $$ = node;
-      }
-|     IDENTIFIER BEGINBRACKET expression ENDBRACKET ASSIGN input 
-      {
-            CodeNode *node = new CodeNode;
-            CodeNode *input_node = $6;
-             CodeNode *expIndex_node = $3;
-
-            //  Get identifier
-            std::string id = $1;
-
-            //  Check if exists
-            if(!find_ambiguous(id))
-            {
-                  yyerror("Symbol not found in symbol table!");
-            }
-
-            node->code = "";
-            node->code += expIndex_node->code;
-            node->code += ".[]< ";
-            node->code += id;
-            node->code += ", ";
-            node->code += expIndex_node->name;
-            node->code += "\n";
-            
-            //  Return
-            $$ = node;
-      } 
-|     IDENTIFIER ASSIGN IDENTIFIER BEGINBRACKET expression ENDBRACKET
-      {
-            // dst = src[index]
-            // =[] dst, src, index
-
-            CodeNode *node = new CodeNode;
-            CodeNode *expIndex_node = $5;
-
-            node->code = expIndex_node->code;
-            node->code += "=[] " + std::string($1) + ", ";
-            node->code += std::string($3) + ", ";
-            node->code += expIndex_node->name + "\n";
-
-            $$ = node;
-      }
-|     IDENTIFIER ASSIGN expression                     
-      {
-            //  Check if ID is in table first 
-            std::string id = $1;
-            if(!find_ambiguous(id))
-            {
-                  yyerror("Symbol not found in symbol table!");
-            }
-
-            CodeNode *node = new CodeNode;
-            CodeNode *exp_node = $3;
-
-            //  Outcome of expression will be stored in ->name
-            //  First, add code that creates the expression
-            node->code = "";
-            node->code += exp_node->code;
-            // Then add the assignment;
-            node->code += "= ";
-            node->code += id;
-            node->code += ", ";
-            node->code += exp_node->name;
-            node->code += "\n";
-
-            node->name = id;
-
-            //  Return
-            $$ = node;
-      }
-|     IDENTIFIER ASSIGN functioncall                  
-      {  
-            //  Check if ID is in table first 
-            std::string id = $1;
-            if(!find_ambiguous(id))
-            {
-                  yyerror("Symbol not found in symbol table!");
-            }
-
-            //  Add functioncall code
-            CodeNode *node = new CodeNode;
-            CodeNode *call_node = $3;
-
-            node->code = "";
-            node->code += call_node->code;
-            node->code += id;
-            node->code += "\n";
-
-            node->name = id;
-
-            $$ = node;
-
-
-      }
-|     IDENTIFIER ASSIGN input                         
-      {  
-            CodeNode *node = new CodeNode;
-            CodeNode *input_node = $3;
-
-            //  Get identifier
-            std::string id = $1;
-
-            //  Check if exists
-            if(!find_ambiguous(id))
-            {
-                  yyerror("Symbol not found in symbol table!");
-            }
-
-            //  Add identifier to code
-            node->code = input_node->code;
-            node->code += id;
-            node->code += "\n";
-
-            node->name = id;
-            
-            //  Return
-            $$ = node;
-      }
-;
-
 functioncall:
       IDENTIFIER BEGINPARAM passingargs ENDPARAM      
       {
             CodeNode *node = new CodeNode;
             CodeNode *args_node = $3;
             std::string id = $1;
+
+            if (!FindFunction(symbol_table, id)) {
+                  yyerror("Error: Yo dawg there ain't no function with that name!");
+            }
 
             node->code = "";
             node->code += args_node->code;
@@ -647,8 +544,21 @@ declaration:
             // Get Identifier
             std::string id = $2;
 
-            // Add to symbol table
-            add_variable_to_symbol_table(id, 0);
+            // Check if symbol already exists
+            if (find(id, $1)) {
+                  yyerror("Error: Name already exists.");
+            } else {
+                  // If it doesn't exist, add to symbol table
+
+                  if (!CheckReservedKeywords(id)) {
+                        printf("%s", &id[0]);
+                        yyerror("Error: Name uses reserved keyword.");
+                  }
+
+                  add_variable_to_symbol_table(id, $1);
+            }
+
+            print_symbol_table();
 
             //    Create Declaration 
             node->code = ". ";
@@ -658,27 +568,6 @@ declaration:
             //  Return
             $$ = node;
       }
-|     type assignment
-      {
-            CodeNode *node = new CodeNode;
-
-            // Get Identifier
-            CodeNode *node2 = $2;
-
-            // Add to symbol table
-            add_variable_to_symbol_table(node2->name, 1);
-
-            //    Add expression code
-            node->code = "";
-            node->code += node2->code;
-
-            //    Create Declaration 
-            node->code += ". ";
-            node->code += node2->code;
-            node->code += "\n";
-
-            
-      }
 |     type array_declaration                             
       {     
             // DECLARATION
@@ -686,6 +575,7 @@ declaration:
 
             CodeNode* node = new CodeNode;
             node = $2;
+            int type = $1;
 
             if (find(node->name, 5)) {
                   yyerror("Error: Symbol already used.");
@@ -698,19 +588,25 @@ declaration:
       }
 ;
 
+
+
 input:
       INPUT BEGINPARAM ENDPARAM               
       {
             CodeNode *node = new CodeNode;
+            std::string temp = create_temp();
 
             //  Construct code here
-            node->code = "";
+            node->code = decl_temp_code(temp);
             node->code += ".< ";
+            node->code += temp;
+            node->code +="\n";
+
+            node->name = temp;
 
             //  Return
             $$ = node;
       }
-
 ;
 
 output:
@@ -727,39 +623,27 @@ output:
 
             $$ = node;
      }
-|     OUTPUT BEGINPARAM IDENTIFIER BEGINBRACKET expression ENDBRACKET ENDPARAM            
-     {
-            CodeNode *node = new CodeNode;
-            CodeNode *expIndex_node = $5;
-            std::string id = $3;
-
-            node->code = expIndex_node->code;
-            node->code += ".[]> ";
-            node->code += id;
-            node->code += ", ";
-            node->code += expIndex_node->name;
-            node->code += "\n";
-
-            $$ = node;
-     }
 ;
 
 array_declaration:
-      IDENTIFIER BEGINBRACKET expression ENDBRACKET 
+      IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET 
       {    
             // creates array
 
 
             CodeNode *node = new CodeNode;
-            CodeNode *exp_node = $3;
+            std::string value = $3;
             std::string id = $1;
 
+            if (atoi(&value[0]) <= 0) {
+                  yyerror("Error: Array of size <= 0");
+            }
+
             //  Add identifier string to code in node
-            node->code += exp_node->code;
             node->code += ".[] ";
             node->code += id;
             node->code += ", ";
-            node->code += exp_node->name;
+            node->code += value;
             node->code += "\n";
 
             node->name = id;
@@ -774,6 +658,43 @@ expression:
       {   
             CodeNode *node = new CodeNode;
             node = $1;
+            $$ = node;
+      }
+|     assignexp ASSIGN expression
+      {
+            CodeNode *node = new CodeNode;
+            CodeNode *dest = $1;
+            CodeNode* src = $3;
+            
+            node->code = dest->code;
+            node->code += src->code;
+            node->code += "= ";
+            node->code += dest->name;
+            node->code += ", ";
+            node->code += src->name;
+            node->code += "\n";
+
+            $$ = node;
+      }
+|     IDENTIFIER BEGINBRACKET expression ENDBRACKET ASSIGN expression
+      {
+            CodeNode *node = new CodeNode;
+            CodeNode *index_node = $3;
+            CodeNode *src_node = $6;
+            std::string id = $1;
+
+            if(!find(id, 5))
+            {
+                  yyerror("Array Symbol not found!!");
+            }
+
+            node->code = index_node->code;
+            node->code += src_node->code;
+            node->code += "[]= ";
+            node->code += id + ", " + index_node->name + ", " + src_node->name + "\n";
+
+            node->name = id;
+
             $$ = node;
       }
 ;
@@ -1052,6 +973,57 @@ term:
             std::string id = $1;
             node->name = id;
 
+            if(!find(id, 1))
+            {
+                  yyerror("Integer Symbol not found!!");
+            }
+
+            $$ = node;
+      }
+|     IDENTIFIER BEGINBRACKET BEGINBRACKET expression ENDBRACKET ENDBRACKET
+      {
+            CodeNode *node = new CodeNode;
+            std::string id = $1;
+            CodeNode *exp_node = $4;
+            std::string temp = create_temp();
+
+            if(!find(id, 5))
+            {
+                  yyerror("Array Symbol not found!!");
+            }
+
+            //  code only for getting, not setting
+            node->code = exp_node->code;
+            node->code += decl_temp_code(temp);
+            node->code += "=[] ";
+            node->code += temp;
+            node->code += ", " + id + ", " + exp_node->name;
+            node->code += "\n";
+
+            node->name = "";
+            node->name += temp;
+
+            $$ = node;
+
+      }
+|     functioncall
+      {
+            CodeNode* node = new CodeNode;
+            CodeNode* func = $1;
+            std::string temp = create_temp();
+
+            node->code = decl_temp_code(temp);
+            node->code += func->code;
+            node->code += temp;
+            node->code += "\n";
+            node->name = temp;
+            $$ = node;
+      }
+|     input 
+      {
+            CodeNode* node = new CodeNode;
+            node = $1;
+
             $$ = node;
       }
 ; 
@@ -1060,6 +1032,30 @@ term:
 
 int main()
 {
+
+reservedKeywords.push_back("if");
+reservedKeywords.push_back("else");
+reservedKeywords.push_back("for");
+reservedKeywords.push_back("while");
+reservedKeywords.push_back("continue");
+reservedKeywords.push_back("break");
+reservedKeywords.push_back("true");
+reservedKeywords.push_back("false");
+reservedKeywords.push_back("return");
+reservedKeywords.push_back("void");
+reservedKeywords.push_back("and");
+reservedKeywords.push_back("or");
+reservedKeywords.push_back("mod");
+reservedKeywords.push_back("dbl");
+reservedKeywords.push_back("int");
+reservedKeywords.push_back("flt");
+reservedKeywords.push_back("bln");
+reservedKeywords.push_back("chr");
+reservedKeywords.push_back("intake");
+reservedKeywords.push_back("defecate");
+reservedKeywords.push_back("func");
+reservedKeywords.push_back("main");
+
   yyparse();
   print_symbol_table();
   return 0;

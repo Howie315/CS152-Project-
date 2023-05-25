@@ -54,7 +54,7 @@ COMMA		          \,
 OUTPUT		        defecate
 INPUT		          intake
 
-NUMBER		        [0-9]+
+NUMBER		        -?[0-9]+
 DECIMAL 	        [0-9]+"."[0-9]*
 
 NEWLINE		        \n
