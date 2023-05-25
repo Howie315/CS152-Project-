@@ -1,20 +1,36 @@
 %{
 #include "codenode.h"
+#include <stdio.h>
 #include <string>
 #include <vector>
-extern int yylex(void);
-void yyerror(const char *msg);
+#include <sstream>
+
+extern int yylex();
+void yyerror(const char *s);
 extern int lineCount;
 
 char *identToken;
 int numberToken;
 int  count_names = 0;
+int count_params = 0;
+
+bool main_exists = false;
 
 enum Type { Integer, Array, Boolean, Double, Character};
 
+/*
+
+      Integer = 1
+      Array = 5
+      Boolean = 2
+      Double = 3
+      Character = 4
+
+*/
+
 struct Symbol {
   std::string name;
-  Type type;
+  int type;
 };
 
 struct Function {
@@ -23,6 +39,26 @@ struct Function {
 };
 
 std::vector <Function> symbol_table;
+
+bool FindFunction(std::vector<Function> vec, std::string name) {
+      for (unsigned i = 0; i < vec.size(); i++) {
+            if (name == vec[i].name) {
+                  return true;
+            }
+      }
+      return false;
+}
+
+std::vector<std::string> reservedKeywords;
+
+bool CheckReservedKeywords(std::string name) {
+      for (unsigned i = 0; i < reservedKeywords.size(); i++) {
+            if (reservedKeywords[i] == name) {
+                  return false;
+            }
+      }
+      return true;
+}
 
 // remember that Bison is a bottom up parser: that it parses leaf nodes first before
 // parsing the parent nodes. So control flow begins at the leaf grammar nodes
@@ -41,7 +77,7 @@ Function *get_function() {
 // grab the most recent function, and linear search to
 // find the symbol you are looking for.
 // you may want to extend "find" to handle different types of "Integer" vs "Array"
-bool find(std::string &value, Type t) {
+bool find(std::string &value, int t) {
   Function *f = get_function();
   for(int i=0; i < f->declarations.size(); i++) {
     Symbol *s = &f->declarations[i];
@@ -75,7 +111,7 @@ void add_function_to_symbol_table(std::string &value) {
 
 // when you see a symbol declaration inside the grammar, add
 // the symbol name as well as some type information to the symbol table
-void add_variable_to_symbol_table(std::string &value, Type t) {
+void add_variable_to_symbol_table(std::string &value, int t) {
   Symbol s;
   s.name = value;
   s.type = t;
@@ -83,16 +119,33 @@ void add_variable_to_symbol_table(std::string &value, Type t) {
   f->declarations.push_back(s);
 }
 
+template <typename T>
+std::string to_string(const T& value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
 std::string create_temp()
 {
       static int num = 0;
-      std::string value = "_temp" + std::to_string(num);
+      std::string value = "_temp" + to_string(num);
       num += 1;
       return value;
 }
 
-// a function to print out the symbol table to the screen
-// largely for debugging purposes.
+bool check_side()
+{
+      static bool side = true;
+      side != side;
+      return side;
+}
+
+std::string decl_temp_code(std::string &temp)
+{
+      return std::string(". ") + temp + std::string("\n");
+}
+
 void print_symbol_table(void) {
   printf("symbol table:\n");
   printf("--------------------\n");
@@ -105,606 +158,912 @@ void print_symbol_table(void) {
   printf("--------------------\n");
 }
 
-
 %}
 
 %union {
-  char *op_val;
-  struct CodeNode *code_node;
-  int int_val;
-  Type *type_node;
-  std::vector<std::string> *string_chain;
+      char* op_val;
+      struct CodeNode* code_node;
+      struct ExpNode* exp_node;
+      int int_val;
 }
 
-%token INTEGER DOUBLE BOOLEAN CHAR
-%token ASSIGN ADD SUB DIV MUL MOD 
-%token FUNCTION BEGINSCOPE ENDSCOPE BEGINPARAM ENDPARAM BEGINBRACKET ENDBRACKET IF ELSE FOR WHILE CONTINUE BREAK TRUE FALSE RETURN VOID NOT AND OR SEMICOLON COMMA
-%token OUTPUT INPUT
-
-%token <op_val> EQ LT LTE GT GTE NE IDENTIFIER NUMBER DECIMAL
-
-%type <code_node> relop ref expression function functions statement statements assignment functioncall input output declaration term
-%type <type_node> type
-%type <string_chain> arguements repeat_arguements passingargs repeat_passingargs
-%type <op_val> arguement
-
+%define parse.error verbose
 
 %start prog_start
 
+%token DOUBLE BOOLEAN CHAR
+%token ASSIGN ADD SUB DIV MUL MOD EQ LT LTE GT GTE NE
+%token FUNCTION BEGINSCOPE ENDSCOPE BEGINPARAM ENDPARAM BEGINBRACKET ENDBRACKET IF ELSE FOR WHILE CONTINUE BREAK TRUE FALSE RETURN VOID NOT AND OR SEMICOLON COMMA
+%token OUTPUT INPUT
+%token <op_val> NUMBER DECIMAL
 
+%token <op_val> INTEGER
+%token <op_val> IDENTIFIER
 
-%error-verbose
-
-
+%type <code_node> expression functioncall
+%type <code_node> functions function array_declaration 
+%type <code_node> arguement arguements repeat_arguements
+%type <code_node> statement statements
+%type <code_node> output input
+%type <code_node> returnstmt declaration 
+%type <code_node> func_ident 
+%type <code_node> passingargs repeat_passingargs
+%type <code_node> logicop eqop relop addop multop multexp term assignexp logicexp relationexp addexp equalityexp
+%type <int_val> type
 %%
+
 prog_start:
-      functions
+      functions 
       {
             CodeNode *code_node = $1;
+
+            if (!main_exists) {
+                  yyerror("Error: Did not define a main function.");
+            }
+
             printf("%s\n", code_node->code.c_str());
       }
 |     %empty    { printf("No Content In File!"); }
 ;
 
 functions: 
-      function
+      function            
       {
-              CodeNode *code_node = $1;
-              $$ = code_node;
-      }
-|     function functions
-      {
-            //  Concatenate 2 generated ocde nodes together
-            CodeNode *code_node1 = $1;
-            CodeNode *code_node2 = $2;
-            CodeNode *node = new CodeNode;
-            node->code = code_node1->code + code_node2->code;
+            CodeNode *node = $1;
             $$ = node;
-      };
+      }
+|     function functions  
+      {
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $2;
+            CodeNode *combined_node = new CodeNode;
+            combined_node->code = node1->code + node2->code;
+            $$ = combined_node;
+      }
 ;
 
+func_ident:
+      FUNCTION IDENTIFIER 
+      {
+            CodeNode *node = new CodeNode;
+            node->name = $2;
+
+            node->code = "func ";
+            node->code += node->name;
+
+            //  add to function table
+            std::string id = $2;
+
+            if (id == "main") {
+                  main_exists = true;
+            }
+
+            if (symbol_table.size() == 0){
+                  add_function_to_symbol_table(id);
+            } else {
+                  add_function_to_symbol_table(id);
+            }
+
+            $$ = node;
+      }
+;
 function:
-      type FUNCTION IDENTIFIER BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE      
-      { 
-            //  Track type of return
-            Type *func_type = $1;
+      type func_ident BEGINPARAM arguements ENDPARAM BEGINSCOPE statements ENDSCOPE      
+      {
+            count_params = 0;
+            //  create start of function
+            CodeNode *node = new CodeNode;
+            CodeNode *ident_node = $2;
+            node->code += ident_node->code + "\n";
+            CodeNode *arg_node = $4;
+            CodeNode *state_node = $7;
+            node->code += arg_node->code;
+            
+            //  Add statement code
+            node->code += state_node->code;
 
-            //  Add function to symbol table here
-            std::string id_name = $3;
-            add_function_to_symbol_table(id_name);
+            node->code += "endfunc\n";
 
-            CodeNode *func_node = new CodeNode;
-            func_node->code = "";
-
-            std::vector<std::string> args;
-
-            //    Arguements will return a vector or arguements, pass them
-            //    To the function here
-            int i;
-            for(i = 0; i < args.size(); i++)
-            {
-                  func_node->code += std::string(". ");
-                  func_node->code += std::string(args.at(i));
-                  func_node->code += std::string("\n");
-            }
-            for(i = 0; i < args.size(); i++)
-            {
-                  func_node->code += std::string("= ");
-                  func_node->code += args.at(i);
-                  func_node->code += std::string(i);  //    Figure out a to_string here
-                  func_node->code += std::string("$\n");
-            }
-
-            //  construct code here
-            func_node->code += "func ";
-            func_node->code += std::string($3);
-            func_node->code += "\n";
-            func_node->code += $8->code;  //  Add statements
-            func_node->code += "endfunc\n\n";
-
-            //return code 
-            $$ = func_node;
-
-
-      } 
+            //  Return code
+            $$ = node;
+      }
 ;
 
 arguements:
       arguement repeat_arguements         
-      {
-            //  Init a vector of strings
-            std::vector<std::string> *args;
-
-            //  Push back first arguement
-            args->push_back($1);
-
-            //  Get other args from repeat_arguements
-            int i;
-            for(i = 0; i < $2->size(); i++)
-                  args->push_back($2->at(i));
-
-            //  Return Vector
-            $$ = args;      
+      {  
+            CodeNode* node1 = $1;
+            CodeNode* node2 = $2;
+            CodeNode* combined_node = new CodeNode;
+            combined_node->code = node1->code + node2->code;
+            
+            $$ = combined_node;
       }
 |     %empty                              
-      {
-             //  Init a vector of strings
-            std::vector<std::string> *args;
-
-            //   Return empty vector
-            $$ = args;
+      {  
+            CodeNode* node = new CodeNode;
+            $$ = node;
       }
 ;
 
 repeat_arguements:
       COMMA arguement repeat_arguements   
-      {
-            //  Init a vector of strings
-            std::vector<std::string> *args;
-
-            //  Push back first arguement
-            args->push_back($2);
-
-            // Add repeat args now
-            int i;
-            for(i = 0; i < $3->size(); i++)
-                  args->push_back($3->at(i));
-
-            //  Now return
-            $$ = args;
-
+      { 
+            CodeNode* node1 = $2;
+            CodeNode* node2 = $3;
+            CodeNode* combined_node = new CodeNode;
+            combined_node->code = node1->code + node2->code;
+            
+            $$ = combined_node;
       }
 |     %empty                              
-      {
-            //  just init an empty vector and return
-             //  Init a vector of strings
-            std::vector<std::string> *args;
-
-            $$ = args;
+      {  
+            CodeNode* node = new CodeNode;
+            $$ = node;
       }
 ;
 
 arguement: 
       type IDENTIFIER                     
-      {
-            //  This will just return a string, and add the vars to table
-            std::string id = $2;
-            Type *t = $1;
-            add_variable_to_symbol_table(id, *t);
-            
-            //  Return
-            $$ = id;
+      { 
+            CodeNode* node = new CodeNode;
+            std::string var_name($2);
+
+            // Check if symbol already exists
+            if (find(var_name, $1)) {
+                  yyerror("Error: Name already exists.");
+            } else {
+                  // If it doesn't exist, add to symbol table
+                  add_variable_to_symbol_table(var_name, $1);
+            }
+
+            node->code = ". " + var_name + "\n";
+            node->code += "= " + var_name + ", $" + to_string(count_params) + "\n"; count_params++;
+
+            $$ = node;
+            //  Type array below, but not sure if we are gonna use it
       }
-|     type array                          { printf("arguement -> array\n");}
 ;
 
 type:
-      VOID      
-      {
+      VOID        
+      { 
+            $$ = 0;
       }
-|     INTEGER 
+|     INTEGER     
       {
-            $$ = Type::Integer;
+            $$ = 1;
       }
-|     BOOLEAN
-      {
-            $$ = Type::Boolean;
+|     BOOLEAN     
+      { 
+            $$ = 2;
       }
-|     DOUBLE
-      {
-            $$ = Type::Double;
+|     DOUBLE    
+      { 
+            $$ = 3;
       }
-|     CHAR
-      {
-            $$ = Type::Character;
+|     CHAR      
+      { 
+            $$ = 4; 
       }
 ;
 
 statements:
       statement SEMICOLON statements  
-      {
-            // Just Concatenate the two nodes here
-            CodeNode *node = new CodeNode;
+      {  
+            //  SEGFAULT HERE from uninit
             CodeNode *node1 = $1;
             CodeNode *node2 = $3;
+            CodeNode *node = new CodeNode;
+            node->code = node1->code + node2->code;
 
-            node->code = "";
-            node->code += node1->code.c_str();
-            node->code += std::string("\n");
-            node->code += node2->code.c_str();
-
-            //  Return
-            $$ - node;
-
+            $$ = node;
       }
-|     controlstmt statements          {}
+|     controlstmt statements         
+      { 
+            // TODO: Implement later  
+      }
 |     %empty                          
       {
-            //  return an empty code node here
-            CodeNode *empty = new CodeNode;
-            empty->code = "";
-            $$ = empty;
+            CodeNode *node = new CodeNode;
+            $$ = node;
       }
 ;
 
 controlstmt:
-      whilestmt     {}
-|     ifstmt        {}
+      whilestmt     
+      { 
+            // TODO: Implement later  
+      }
+|     ifstmt        
+      { 
+            // TODO: Implement later  
+      }
 ;
 
 statement: 
-      returnstmt    { printf("statement -> returnstmt\n"); }
-|     assignment    { printf("statement -> assignment\n"); }
-|     functioncall  { printf("statement -> functioncall\n"); }
-|     declaration   { printf("statement -> declaration\n"); }
-|     output            { printf("statement -> output\n"); }
-|     continuestmt  { printf("statement -> continuestmt\n"); }
-|     breakstmt     { printf("statement -> breakstmt\n"); }
-|     expression    { printf("statement -> expression\n"); }
+      returnstmt    
+      {
+            CodeNode* node = $1; $$ = node;
+      }
+|     declaration
+      { 
+            CodeNode *node = $1; $$ = node;  
+      }
+|     output
+      { 
+            CodeNode *node = $1; $$ = node;  
+      }
+|     continuestmt  
+      { 
+            // TODO: Implement later 
+      }
+|     breakstmt     
+      { 
+            // TODO: Implement later 
+      }
+|     expression
+      { 
+            CodeNode *node = $1; $$ = node;  
+      }
 ;
 
 whilestmt:
-     WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE      { printf("whilestmt -> WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE\n"); }
+     WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE      
+      {
+            // TODO: Implement later 
+      }
 ;
 
 continuestmt:
-   CONTINUE                         { printf("continuestmt -> CONTINUE\n"); }
+   CONTINUE                         
+      { 
+            // TODO: Implement later 
+      }
 ;
 
 breakstmt:
-   BREAK                            { printf("breakstmt -> BREAK\n"); }
+   BREAK                            
+   { 
+      // TODO: Implement later 
+   }
 ;
 
 returnstmt: 
-      RETURN expression             { printf("returnstmt -> expression\n"); }
-;
-
-ifstmt:
-      IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE                                      { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE\n"); }
-|     IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE  { printf("ifstmt -> IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE\n"); }
-;
-
-assignment: 
-      IDENTIFIER ASSIGN expression                    
-      {
-            //  assigns a value to a var
+      RETURN expression             
+      {  
             CodeNode *node = new CodeNode;
+            CodeNode *exp_node = $2;
 
-            //  Get Identifier
-            node->name = std::string($1);
-
-            //  Declare 
+            //  Outcome of expression will be stored in "->name"
+            //  Code for expression stored in "->code"
+            //  First, add code that creates the expression
             node->code = "";
-            node->code += ". ";
-            node->code += std::string($1);
-            node->code += "\n";
+            node->code += exp_node->code;
 
-            //  So we set up temporary value to be returned
-            //  Code that sets the value of "temp" will be stored in the expression module
-            CodeNode *exp_node = $3;
-            node->code += exp_node->code.c_str();
-
-            //  Now assign value
-            node->code += std::string("= ");
-            node->code += std::string($1);
-            node->code += std::string(", ");
+            // Then add return code
+            node->code += "ret ";
             node->code += exp_node->name;
-            node->code += std::string("\n");
-
-            //  Return node
-            $$ = node;
-      }
-|     array ASSIGN expression                         
-      { 
-            printf("assignment -> array ASSIGN expression\n"); 
-      }
-|     IDENTIFIER ASSIGN functioncall                  
-      {
-            //  Luckily, mil makes this easier than expected
-            CodeNode *node = new CodeNode;
-
-            //  Get Identifier, init code
-            node->name = std::string($1);
-            node->code = "";
-
-            //  Get name of function being called
-            std::string func_name = $3->name;
-
-            //  Add code
-            node->code += $3->code;
-            node->code += "= ";
-            node->code += std::string($1);
-            node->code += std::string(", ");
-            node->code += std::string($3->name);
-            node->code += std::string("\n");
+            node->code += "\n";
 
             //  Return
             $$ = node;
       }
-|     IDENTIFIER ASSIGN input                            
-      {
-            //  COnstruct input string
-            CodeNode *node = new CodeNode;
-            node->code = "";
-            node->code += $3->code.c_str();
-            node->code += std::string(" ");
-            node->code += std::string($1);
-            node->code += std::string("\n");
+;
 
-            // return
-            $$ = node;
+ifstmt:
+      IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE                                      
+      { 
+            // TODO: Implement later 
+      }
+|     IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE  
+      { 
+            // TODO: Implement later 
       }
 ;
 
 functioncall:
-      type FUNCTION IDENTIFIER BEGINPARAM passingargs ENDPARAM SEMICOLON                           
+      IDENTIFIER BEGINPARAM passingargs ENDPARAM      
       {
-            // This is the code to CALL an already-made function
-            Type *func_type = $1;
-            std::string name = $3;
+            CodeNode *node = new CodeNode;
+            CodeNode *args_node = $3;
+            std::string id = $1;
 
-            if(!find(name, *func_type))
-            {
-                  yyerror("ERROR: Function not defined.");
+            if (!FindFunction(symbol_table, id)) {
+                  yyerror("Error: Yo dawg there ain't no function with that name!");
             }
 
-            CodeNode *func_call = new CodeNode;
+            node->code = "";
+            node->code += args_node->code;
+            node->code += "call ";
+            node->code += id;
+            node->code +=", ";
 
-            func_call->name = std::string($3);
-            func_call->code = "";
-            // ARGUEMENTS HERE
-            std::vector<std::string> *args = $5;
+            node->name = id;
 
-            //    Arguements will return a vector or arguements, pass them
-            //    To the function here
-            int i;
-            for(i = 0; i < args->size(); i++)
-            {
-                  func_call->code += std::string("param ");
-                  func_call->code += args->at(i);
-                  func_call->code += std::string("\n");
-            }
-            func_call->code += "call ";
-            func_call->code += name;
-            func_call->code +=", ";
-
-            //return code
-            $$ = func_call;
+            $$ = node;
 
       }
 ;
 
 passingargs:
       expression repeat_passingargs             
-      { 
-            //  Init a vector of strings
-            std::vector<std::string> *args;
+      {
+            CodeNode *node = new CodeNode;
+            CodeNode *exp_node = $1;
+            CodeNode *rep_node = $2;
 
-            //  Push back first arguement
-            args->push_back($1->name);
+            node->code = "";
+            node->code += exp_node->code;
+            node->code += rep_node->code;
+            node->code += "param ";
+            node->code += exp_node->name;
+            node->code += "\n";
 
-            //  Get other args from repeat_arguements
-            int i;
-            for(i = 0; i < $2->size(); i++)
-                  args->push_back($2->at(i));
+            node->name += rep_node->name;
+            
 
-            //  Return Vector
-            $$ = args;
+            $$ = node;
       }
 |     %empty                                    
-      {
-          std::vector<std::string> *args;  
-          $$ = args;
+      {  
+            CodeNode *node = new CodeNode;
+            $$ = node;
       }
 
 repeat_passingargs:
       COMMA expression repeat_arguements        
-      {
-             //  Init a vector of strings
-            std::vector<std::string> *args;
+      {  
+            CodeNode *node = new CodeNode;
+            CodeNode *exp_node = $2;
+            CodeNode *rep_node = $3;
 
-            //  Push back first arguement
-            //  ****MAKE SURE WE SET UP A TEMP FOR OUR EXP NODES*******
-            args->push_back($2->name);
+            node->code = "";
+            node->code += exp_node->code;
+            node->code += rep_node->code;
+            node->code += "param ";
+            node->code += exp_node->name;
+            node->code += "\n";
 
-            // Add repeat args now
-            int i;
-            for(i = 0; i < $3->size(); i++)
-                  args->push_back($3->at(i));
+            node->name += rep_node->name;
+            
 
-            //  Now return
-            $$ = args;
+            $$ = node;
       }
-|     %empty
-      {
-          std::vector<std::string> *args;  
-          $$ = args;
+|     %empty                                    
+      {  
+            CodeNode *node = new CodeNode;
+            $$ = node;
       }
 
 declaration:
       type IDENTIFIER                           
       {
-            // "type" now returns Type of variable
             CodeNode *node = new CodeNode;
 
-            // Create node code here
-            node->name = std::string($2);
-            node->code = "";
-            node->code += ". ";
-            node->code += std::string($2);
+            // Get Identifier
+            std::string id = $2;
 
-            //    Add to symbol table
-            add_variable_to_symbol_table(node->name, *$1);
+            // Check if symbol already exists
+            if (find(id, $1)) {
+                  yyerror("Error: Name already exists.");
+            } else {
+                  // If it doesn't exist, add to symbol table
 
+                  if (!CheckReservedKeywords(id)) {
+                        printf("%s", &id[0]);
+                        yyerror("Error: Name uses reserved keyword.");
+                  }
 
-            //    return
+                  add_variable_to_symbol_table(id, $1);
+            }
+
+            print_symbol_table();
+
+            //    Create Declaration 
+            node->code = ". ";
+            node->code += id;
+            node->code += "\n";
+
+            //  Return
             $$ = node;
       }
-|     type assignment                           
+|     type array_declaration                             
+      {     
+            // DECLARATION
+            // .[] name, n
+
+            CodeNode* node = new CodeNode;
+            node = $2;
+            int type = $1;
+
+            if (find(node->name, 5)) {
+                  yyerror("Error: Symbol already used.");
+            } else {
+                  add_variable_to_symbol_table(node->name, 5);
+            }
+
+            $$ = node;
+
+      }
+;
+
+
+
+input:
+      INPUT BEGINPARAM ENDPARAM               
       {
-            //  these two nodes are basically made already so just concat them, 
-            //  But also check if they exist
             CodeNode *node = new CodeNode;
-            Type *f = $1;
-            CodeNode *node2 = $2;
+            std::string temp = create_temp();
 
-            //  Add to table, since we are also declaring here
-            add_variable_to_symbol_table(node2->name, *f);
+            //  Construct code here
+            node->code = decl_temp_code(temp);
+            node->code += ".< ";
+            node->code += temp;
+            node->code +="\n";
 
-            // Now write the code
+            node->name = temp;
+
+            //  Return
+            $$ = node;
+      }
+;
+
+output:
+     OUTPUT BEGINPARAM expression ENDPARAM            
+     {
+            CodeNode *node = new CodeNode;
+            CodeNode *exp_node = $3;
+
             node->code = "";
-            node->code += $2->code.c_str();
+            node->code += exp_node->code;
+            node->code += ".> ";
+            node->code += exp_node->name;
+            node->code += "\n";
+
+            $$ = node;
+     }
+;
+
+array_declaration:
+      IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET 
+      {    
+            // creates array
+
+
+            CodeNode *node = new CodeNode;
+            std::string value = $3;
+            std::string id = $1;
+
+            if (atoi(&value[0]) <= 0) {
+                  yyerror("Error: Array of size <= 0");
+            }
+
+            //  Add identifier string to code in node
+            node->code += ".[] ";
+            node->code += id;
+            node->code += ", ";
+            node->code += value;
+            node->code += "\n";
+
+            node->name = id;
 
             // Return
             $$ = node;
-
-
       }
-|     type array                                { printf("declaration -> type array\n"); }
-;
-
-input:
-      INPUT BEGINPARAM ENDPARAM                 
-      {
-            CodeNode *node = new CodeNode;
-            node->code = "";
-            node->code += ".<";
-            $$ = node;
-      }
-;
-output:
-      OUTPUT BEGINPARAM ref ENDPARAM            
-      {
-            //  Construct output
-            CodeNode *node = new CodeNode;
-            node->code = "";
-            node->code += std::string(".> ");
-            node->code += $3->code.c_str();
-
-            // Return node
-            $$ = node;
-      }
-;
-
-ref:
-      IDENTIFIER                                
-      {
-            //  Get Identifier
-            CodeNode *node = new CodeNode;
-            node->name = std::string($1);
-            node->code = std::string($1);
-
-            //  Check if exists
-            if(!find_ambiguous(node->name))
-                yyerror("Symbol not found in SYmbol table (ref)");
-            
-            // If it does, return
-            $$ = node;
-      }
-|     array                                     { printf("ref -> array\n"); }
-;
-
-array:
-      IDENTIFIER BEGINBRACKET expression ENDBRACKET { printf("array -> IDENTIFIER BEGINBRACKET NUMBER ENDBRACKET\n"); }
-
 ;
 
 expression:
-      assignexp                           { printf("expression -> assignexp\n"); }
+      assignexp                           
+      {   
+            CodeNode *node = new CodeNode;
+            node = $1;
+            $$ = node;
+      }
+|     assignexp ASSIGN expression
+      {
+            CodeNode *node = new CodeNode;
+            CodeNode *dest = $1;
+            CodeNode* src = $3;
+            
+            node->code = dest->code;
+            node->code += src->code;
+            node->code += "= ";
+            node->code += dest->name;
+            node->code += ", ";
+            node->code += src->name;
+            node->code += "\n";
+
+            $$ = node;
+      }
+|     IDENTIFIER BEGINBRACKET expression ENDBRACKET ASSIGN expression
+      {
+            CodeNode *node = new CodeNode;
+            CodeNode *index_node = $3;
+            CodeNode *src_node = $6;
+            std::string id = $1;
+
+            if(!find(id, 5))
+            {
+                  yyerror("Array Symbol not found!!");
+            }
+
+            node->code = index_node->code;
+            node->code += src_node->code;
+            node->code += "[]= ";
+            node->code += id + ", " + index_node->name + ", " + src_node->name + "\n";
+
+            node->name = id;
+
+            $$ = node;
+      }
 ;
 
 assignexp:
-      logicexp logicop assignexp          { printf("assignexp -> logicexp logicop assignexp\n"); }
-|     logicexp                            { printf("assignexp -> logicexp\n"); }
+      logicexp logicop assignexp          
+      {  
+            std::string temp = create_temp();
+            CodeNode *node = new CodeNode;
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $3;
+            CodeNode *op = $2;
+
+            node->code = node1->code + node2->code + decl_temp_code(temp);
+            node->code += op->code + std::string(" ") + temp + std::string(", ");
+            node->code += node1->name + std::string(", ") + node2->name + std::string("\n");
+            node->name = temp;
+            $$ = node;
+
+            //temp 1 = node1.code
+            //temp_2 = node2.code 
+            //node.code = node1.code + node2.code + declare(temp_0)
+            //node.code = + temp_0, temp_1, temp_2
+
+      }
+|     logicexp                            
+      { 
+            CodeNode* node = $1;
+            $$ = node;
+      }
 ;
 
 logicop:
-      AND                                 { printf("logicop -> AND\n"); }
-|     OR                                  { printf("logicop -> OR\n"); }
+      AND                                 
+      {  
+            CodeNode* node = new CodeNode;
+            node->code = "&& ";
+
+            $$ = node;
+      }
+|     OR                                  
+      {  
+            CodeNode* node = new CodeNode;
+            node->code = "|| ";
+
+            $$ = node;
+      }
 ;
 
 logicexp:
-      equalityexp eqop logicexp           { printf("logicexp -> equalityexp eqop logicexp\n"); }
-|     equalityexp                         { printf("logicexp -> equalityexp\n"); }
+      equalityexp eqop logicexp           
+      {  
+            std::string temp = create_temp();
+            CodeNode *node = new CodeNode;
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $3;
+            CodeNode *op = $2;
+
+            node->code = node1->code + node2->code + decl_temp_code(temp);
+            node->code += op->code + std::string(" ") + temp + std::string(", ");
+            node->code += node1->name + std::string(", ") + node2->name + std::string("\n");
+            node->name = temp;
+            $$ = node;
+      }
+|     equalityexp                         
+      {  
+            CodeNode* node = $1;
+            $$ = node;
+      }
 ;
 
 eqop:
-      EQ                                  { printf("eqop -> EQ\n"); }
-|     NE                                  { printf("eqop -> NE\n"); }
+      EQ                                  
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "== ";
+
+            $$ = node;
+            
+      }
+|     NE                                  
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "!= ";
+      }
 ;
 
 equalityexp:
-      relationexp relop equalityexp       { printf("equalityexp -> relationexp relop equalityexp\n"); }
-|     relationexp                         { printf("equalityexp -> relationexp\n"); }
+      relationexp relop equalityexp       
+      {  
+            std::string temp = create_temp();
+            CodeNode *node = new CodeNode;
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $3;
+            CodeNode *op = $2;
+
+            node->code = node1->code + node2->code + decl_temp_code(temp);
+            node->code += op->code + std::string(" ") + temp + std::string(", ");
+            node->code += node1->name + std::string(", ") + node2->name + std::string("\n");
+            node->name = temp;
+            $$ = node;
+      }
+|     relationexp                         
+      {  
+            CodeNode* node = $1;
+            $$ = node;
+      }
 ;
 
 relop:
       LT                                  
-      {}
-|     LTE
-      {}
+      {  
+            CodeNode* node = new CodeNode;
+            node->code = "< ";
+
+            $$ = node;
+      }
+|     LTE                                 
+      {  
+            CodeNode* node = new CodeNode;
+            node->code = "<= ";
+
+            $$ = node;
+      }
 |     GT                                  
-      {}
-|     GTE
-      {}
+      {  
+            CodeNode* node = new CodeNode;
+            node->code = "> ";
+
+            $$ = node;
+      }
+|     GTE                                 
+      {  
+            CodeNode* node = new CodeNode;
+            node->code = ">= ";
+
+            $$ = node;
+      }
 ;
 
 relationexp:
-      addexp addop relationexp            {printf("relationexp -> addexp addop relationexp\n");}
-|     addexp                              {printf("relationexp -> addexp\n");}
+      addexp addop relationexp            
+      {
+            std::string temp = create_temp();
+            CodeNode *node = new CodeNode;
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $3;
+            CodeNode *op = $2;
+
+            node->code = node1->code + node2->code + decl_temp_code(temp);
+            node->code += op->code + std::string(" ") + temp + std::string(", ");
+            node->code += node1->name + std::string(", ") + node2->name + std::string("\n");
+            node->name = temp;
+            $$ = node;
+      }
+|     addexp                              
+      {
+            CodeNode* node = $1;
+            $$ = node;
+      }
 ;
 
 addop:
-      ADD                                 {printf("addop -> ADD\n");}
-|     SUB                                 {printf("addop -> SUB\n");}
+      ADD
+      {
+            CodeNode* node = new CodeNode;
+            node->code = "+ ";
+
+            $$ = node;
+      }
+|     SUB                                 
+      {
+            CodeNode* node = new CodeNode;
+            node->code = "- ";
+
+            $$ = node;
+      }
 ;
 
 addexp:
-      multexp multop addexp               {printf("addexp -> multexp multop addexp\n");}
-|     multexp                             {printf("addexp -> multexp\n");}
+      multexp multop addexp               
+      {  
+            std::string temp = create_temp();
+            CodeNode *node = new CodeNode;
+            CodeNode *node1 = $1;
+            CodeNode *node2 = $3;
+            CodeNode *op = $2;
+
+            node->code = node1->code + node2->code + decl_temp_code(temp);
+            node->code += op->code + std::string(" ") + temp + std::string(", ");
+            node->code += node1->name + std::string(", ") + node2->name + std::string("\n");
+            node->name = temp;
+            $$ = node;
+      }
+|     multexp                             
+      { 
+            CodeNode* node = $1;
+
+            $$ = node;
+      }
 ;
 
 multop:
-      MUL                                 {printf("multop -> MUL\n");}
-|     DIV                                 {printf("multop -> DIV\n");}
-|     MOD                                 {printf("multop -> MOD\n");}
+      MUL                                 
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "* ";
+
+            $$ = node;
+      }
+|     DIV                                 
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "/ ";
+
+            $$ = node;
+      }
+|     MOD                                 
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "% ";
+
+            $$ = node;
+      }
 ;
 multexp: 
-      NOT term                            
-      {     
-            printf("multexp -> NOT term\n");
+      NOT term
+      { 
+            CodeNode* node = new CodeNode;
+            CodeNode* term_node = $2;
+
+            node->code += term_node->code;
+            node->code += "! ";
+            node->code += term_node->name;
+            node->code += ", ";
+            node->code += term_node->name;
+            node->code += "\n";
+
+            node->name = term_node->name;
+
+            $$ = node;
       }
-|     term                                {printf("multexp -> term\n");}
+|     term                                
+      {  
+            CodeNode* node = new CodeNode;
+            CodeNode* term_node = $1;
+
+            node->code += term_node->code;
+            node->name = term_node->name;
+
+
+            $$ = node;
+      }
 ;
 
 term:
       BEGINPARAM expression ENDPARAM      
-      {
-            //  How tf do we handle this?
+      { 
+            CodeNode* node = new CodeNode;
+            CodeNode* exp_node = $2;
+            node->code = exp_node->code;
+
+            $$ = exp_node;
       }
 |     NUMBER                              
-      {
-            CodeNode *node = new CodeNode;
-            node->code = $1;
+      { 
+            CodeNode* node = new CodeNode;
+            node->code = "";
+            node->name = $1;
+
             $$ = node;
       }
-|     ref
+|     IDENTIFIER             
+      { 
+            CodeNode* node = new CodeNode;
+            std::string id = $1;
+            node->name = id;
+
+            if(!find(id, 1))
+            {
+                  yyerror("Integer Symbol not found!!");
+            }
+
+            $$ = node;
+      }
+|     IDENTIFIER BEGINBRACKET BEGINBRACKET expression ENDBRACKET ENDBRACKET
       {
-            //    NOT DONE
-            $$ = $1;
+            CodeNode *node = new CodeNode;
+            std::string id = $1;
+            CodeNode *exp_node = $4;
+            std::string temp = create_temp();
+
+            if(!find(id, 5))
+            {
+                  yyerror("Array Symbol not found!!");
+            }
+
+            //  code only for getting, not setting
+            node->code = exp_node->code;
+            node->code += decl_temp_code(temp);
+            node->code += "=[] ";
+            node->code += temp;
+            node->code += ", " + id + ", " + exp_node->name;
+            node->code += "\n";
+
+            node->name = "";
+            node->name += temp;
+
+            $$ = node;
+
+      }
+|     functioncall
+      {
+            CodeNode* node = new CodeNode;
+            CodeNode* func = $1;
+            std::string temp = create_temp();
+
+            node->code = decl_temp_code(temp);
+            node->code += func->code;
+            node->code += temp;
+            node->code += "\n";
+            node->name = temp;
+            $$ = node;
+      }
+|     input 
+      {
+            CodeNode* node = new CodeNode;
+            node = $1;
+
+            $$ = node;
       }
 ; 
+
 %%
 
-int main(int argc, char **argv)
+int main()
 {
-   yyparse();
-   print_symbol_table();
-   return 0;
+
+reservedKeywords.push_back("if");
+reservedKeywords.push_back("else");
+reservedKeywords.push_back("for");
+reservedKeywords.push_back("while");
+reservedKeywords.push_back("continue");
+reservedKeywords.push_back("break");
+reservedKeywords.push_back("true");
+reservedKeywords.push_back("false");
+reservedKeywords.push_back("return");
+reservedKeywords.push_back("void");
+reservedKeywords.push_back("and");
+reservedKeywords.push_back("or");
+reservedKeywords.push_back("mod");
+reservedKeywords.push_back("dbl");
+reservedKeywords.push_back("int");
+reservedKeywords.push_back("flt");
+reservedKeywords.push_back("bln");
+reservedKeywords.push_back("chr");
+reservedKeywords.push_back("intake");
+reservedKeywords.push_back("defecate");
+reservedKeywords.push_back("func");
+reservedKeywords.push_back("main");
+
+  yyparse();
+  print_symbol_table();
+  return 0;
 }
 
-void yyerror(const char *msg)
+void yyerror(const char* s)
 {
-   printf("** Line %d: %s\n", lineCount, msg);
-   exit(1);
+  printf("ERROR on line %d: %s\n", lineCount + 1, s);
+
+  exit(1);
 }
