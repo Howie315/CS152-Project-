@@ -423,10 +423,12 @@ statement:
 |     continuestmt  
       { 
             // TODO: Implement later 
+            CodeNode *node = $1; $$ = node;  
       }
 |     breakstmt     
       { 
             // TODO: Implement later 
+            CodeNode *node = $1; $$ = node;  
       }
 |     expression
       { 
@@ -471,7 +473,7 @@ continuestmt:
    CONTINUE                         
       { 
             // TODO: Implement later 
-             CodeNode* node = new CodeNode;
+            CodeNode* node = new CodeNode;
             node->code = "continue;\n";
             $$ = node;
       }
