@@ -202,6 +202,8 @@ void print_symbol_table(void) {
 %type <code_node> controlstmt
 %type <code_node> whilestmt
 %type <code_node> ifstmt
+%type <code_node> continuestmt
+%type <code_node> breakstmt
 %%
 
 prog_start:
@@ -469,6 +471,9 @@ continuestmt:
    CONTINUE                         
       { 
             // TODO: Implement later 
+             CodeNode* node = new CodeNode;
+            node->code = "continue;\n";
+            $$ = node;
       }
 ;
 
@@ -476,6 +481,9 @@ breakstmt:
    BREAK                            
    { 
       // TODO: Implement later 
+      CodeNode* node = new CodeNode;
+      node->code = "break;\n";
+      $$ = node;
    }
 ;
 

@@ -21,7 +21,7 @@ void func main() {
 		i = i + 1;
 	}
 	
-	i = 2;
+	
 	while (i <= sqrt_n) 
 	{
 		if (a[i] := 0) 
