@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <set>
 
 extern int yylex();
 void yyerror(const char *s);
@@ -1161,6 +1162,8 @@ reservedKeywords.push_back("intake");
 reservedKeywords.push_back("defecate");
 reservedKeywords.push_back("func");
 reservedKeywords.push_back("main");
+
+
 
   yyparse();
   print_symbol_table();
