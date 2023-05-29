@@ -60,6 +60,14 @@ bool CheckReservedKeywords(std::string name) {
       return true;
 }
 
+std::string generateLabel() {
+    static int labelCount = 0;
+    std::ostringstream oss;
+    oss << "L" << labelCount++;
+    return oss.str();
+}
+
+
 // remember that Bison is a bottom up parser: that it parses leaf nodes first before
 // parsing the parent nodes. So control flow begins at the leaf grammar nodes
 // and propagates up to the parents.
@@ -190,6 +198,9 @@ void print_symbol_table(void) {
 %type <code_node> passingargs repeat_passingargs
 %type <code_node> logicop eqop relop addop multop multexp term assignexp logicexp relationexp addexp equalityexp
 %type <int_val> type
+%type <code_node> controlstmt
+%type <code_node> whilestmt
+%type <code_node> ifstmt
 %%
 
 prog_start:
@@ -361,7 +372,13 @@ statements:
       }
 |     controlstmt statements         
       { 
-            // TODO: Implement later  
+            // TODO: Implement later 
+            CodeNode* node1 = $1;
+            CodeNode* node2 = $2;
+            CodeNode* combinedNode = new CodeNode;
+            combinedNode->code = node1->code + node2->code;
+
+            $$ = combinedNode; 
       }
 |     %empty                          
       {
@@ -374,10 +391,16 @@ controlstmt:
       whilestmt     
       { 
             // TODO: Implement later  
+            CodeNode* whileNode = $1;
+            $$ = whileNode;
+            
       }
 |     ifstmt        
       { 
-            // TODO: Implement later  
+            // TODO: Implement later
+            CodeNode* ifNode = $1;
+            $$ = ifNode;
+            
       }
 ;
 
@@ -412,7 +435,33 @@ whilestmt:
      WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE      
       {
             // TODO: Implement later 
+            CodeNode* conditionNode = $3;
+            CodeNode* statementsNode = $6;
+        
+             CodeNode* whileNode = new CodeNode;
+        
+            // Generate code for the condition
+             whileNode->code += conditionNode->code;
+        
+             // Create labels for the loop
+            std::string loopLabel = generateLabel();
+            std::string endLabel = generateLabel();
+        
+            // Add the loop start label
+            whileNode->code += loopLabel + ":\n";
+        
+            // Add the code for the statements
+             whileNode->code += statementsNode->code;
+        
+            // Generate code for the condition check
+            whileNode->code += conditionNode->name + " br " + loopLabel + ", " + endLabel + "\n";
+        
+            // Add the loop end label
+             whileNode->code += endLabel + ":\n";
+        
+            $$ = whileNode;
       }
+      
 ;
 
 continuestmt:
@@ -454,11 +503,68 @@ returnstmt:
 ifstmt:
       IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE                                      
       { 
-            // TODO: Implement later 
+            CodeNode* conditionNode = $3;
+            CodeNode* statementsNode = $6;
+            
+            CodeNode* ifNode = new CodeNode;
+            
+            // Generate code for the condition
+            ifNode->code += conditionNode->code;
+            
+            // Create labels for the branches
+            std::string trueLabel = generateLabel();
+            std::string falseLabel = generateLabel();
+            std::string endLabel = generateLabel();
+            
+            // Add the code for the condition check and branching
+            ifNode->code += conditionNode->name + " br " + trueLabel + ", " + falseLabel + "\n";
+            
+            // Add the true branch label and code
+            ifNode->code += trueLabel + ":\n";
+            ifNode->code += statementsNode->code;
+            ifNode->code += "br " + endLabel + "\n";
+            
+            // Add the false branch label and code
+            ifNode->code += falseLabel + ":\n";
+            
+            // Add the end label
+            ifNode->code += endLabel + ":\n";
+            
+            $$ = ifNode;
       }
 |     IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE  
       { 
-            // TODO: Implement later 
+            CodeNode* conditionNode = $3;
+            CodeNode* trueStatementsNode = $6;
+            CodeNode* falseStatementsNode = $10;
+            
+            CodeNode* ifNode = new CodeNode;
+            
+            // Generate code for the condition
+            ifNode->code += conditionNode->code;
+            
+            // Create labels for the branches
+            std::string trueLabel = generateLabel();
+            std::string falseLabel = generateLabel();
+            std::string endLabel = generateLabel();
+            
+            // Add the code for the condition check and branching
+            ifNode->code += conditionNode->name + " br " + trueLabel + ", " + falseLabel + "\n";
+            
+            // Add the true branch label and code
+            ifNode->code += trueLabel + ":\n";
+            ifNode->code += trueStatementsNode->code;
+            ifNode->code += "br " + endLabel + "\n";
+            
+            // Add the false branch label and code
+            ifNode->code += falseLabel + ":\n";
+            ifNode->code += falseStatementsNode->code;
+            ifNode->code += "br " + endLabel + "\n";
+            
+            // Add the end label
+            ifNode->code += endLabel + ":\n";
+            
+            $$ = ifNode;
       }
 ;
 

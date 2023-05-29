@@ -8,23 +8,28 @@ void func main() {
 	// compute the square root of n and put the result in sqrt_n 
 	n = intake();
 	x = n;
-	while (x > n / x) {
+	while (x > n / x) 
+	{
 		x = (x+n/x)/2;
 	}
 	sqrt_n = x;
 	// initialization of the array 
 	i = 2;
-	while (i <= n) {
+	while (i <= n) 
+	{
 		a[i] = 0;
 		i = i + 1;
 	}
-	// make the array 
+	
 	i = 2;
-	while (i <= sqrt_n) {
-		if (a[i] := 0) {
+	while (i <= sqrt_n) 
+	{
+		if (a[i] := 0) 
+		{
 			// i prime, so eliminate its multiples 
 			j = i+i;
-			while (j <= n) {
+			while (j <= n) 
+			{
 				a[j] = 1;
 				j = j + i;
 			}
@@ -33,8 +38,10 @@ void func main() {
 	}
 	// print primes 
 	i = 2;
-	while (i <= n) {
-		if (a[i] := 0) {
+	while (i <= n) 
+	{
+		if (a[i] := 0) 
+		{
 			defecate(i);
 		}
 		i = i + 1;
