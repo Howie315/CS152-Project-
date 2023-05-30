@@ -5,19 +5,16 @@ void func main()
   i = 0;
   while (i <= 10) 
   {
-        defecate(i);
-      
-        if (i > 3)
-        {
-          break;
-        }
-        else
-        {
-          continue;
-
-        }
-        
-      
-        i = i + 1;
+    defecate(i);
+    
+    if (i > 0)
+    {
+      continue;
+    }
+    else
+    {
+      break; // Move the break statement outside of the else block
+    }
+    i = i + 1; // Increment after checking the condition
   }
 }

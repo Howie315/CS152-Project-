@@ -16,7 +16,8 @@ int  count_names = 0;
 int count_params = 0;
 
 bool main_exists = false;
-
+bool insideLoop = false;
+bool insideIfElse = false;
 enum Type { Integer, Array, Boolean, Double, Character};
 
 /*
@@ -68,6 +69,8 @@ std::string generateLabel() {
     return oss.str();
 }
 
+std::vector<std::string> breakStack;
+std::vector<std::string> continueStack;
 
 // remember that Bison is a bottom up parser: that it parses leaf nodes first before
 // parsing the parent nodes. So control flow begins at the leaf grammar nodes
@@ -365,7 +368,7 @@ type:
 statements:
       statement SEMICOLON statements  
       {  
-            //  SEGFAULT HERE from uninit
+           
             CodeNode *node1 = $1;
             CodeNode *node2 = $3;
             CodeNode *node = new CodeNode;
@@ -375,7 +378,7 @@ statements:
       }
 |     controlstmt statements         
       { 
-            // TODO: Implement later 
+           
             CodeNode* node1 = $1;
             CodeNode* node2 = $2;
             CodeNode* combinedNode = new CodeNode;
@@ -395,6 +398,7 @@ controlstmt:
       { 
             // TODO: Implement later  
             CodeNode* whileNode = $1;
+           
             $$ = whileNode;
             
       }
@@ -402,9 +406,22 @@ controlstmt:
       { 
             // TODO: Implement later
             CodeNode* ifNode = $1;
+            
             $$ = ifNode;
             
       }
+|     continuestmt  
+      { 
+            CodeNode* continueNode = $1;
+            $$ = continueNode;
+      }
+|     breakstmt     
+      { 
+            CodeNode* breakNode = $1;
+          
+            $$ = breakNode;
+      }
+      
 ;
 
 statement: 
@@ -439,52 +456,65 @@ statement:
 whilestmt:
      WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE      
       {
-            // TODO: Implement later 
-            CodeNode* conditionNode = $3;
-            CodeNode* statementsNode = $6;
-        
-             CodeNode* whileNode = new CodeNode;
-        
-            // Generate code for the condition
-             whileNode->code += conditionNode->code;
-        
-             // Create labels for the loop
-            std::string loopLabel = generateLabel();
-            std::string endLabel = generateLabel();
-        
-            // Add the loop start label
-            whileNode->code += loopLabel + ":\n";
-        
-            // Add the code for the statements
-             whileNode->code += statementsNode->code;
-        
-            // Generate code for the condition check
-            whileNode->code += conditionNode->name + " br " + loopLabel + ", " + endLabel + "\n";
-        
-            // Add the loop end label
-             whileNode->code += endLabel + ":\n";
-        
-            $$ = whileNode;
+             CodeNode* conditionNode = $3;
+      CodeNode* statementsNode = $6;
+
+      CodeNode* whileNode = new CodeNode;
+
+      // Generate code for the condition
+      whileNode->code += conditionNode->code;
+
+      // Create labels for the loop
+      std::string loopLabel = generateLabel();
+      std::string endLabel = generateLabel();
+      std::string continueLabel = generateLabel();
+      std::string breakLabel = generateLabel();
+
+      // Add the loop start label
+      whileNode->code += loopLabel + ":\n";
+
+      // Add the code for the statements
+      whileNode->code += statementsNode->code;
+
+      // Generate code for the condition check
+      whileNode->code += conditionNode->name + " br " + loopLabel + ", " + endLabel + "\n";
+
+
+             if (insideLoop) 
+             {
+                 whileNode->code += "br " + breakLabel + "\n";
+                  insideLoop = false; // Reset the flag
+             }
+
+          
+            if(insideIfElse){
+                  whileNode->code += "br " + breakLabel + "\n";
+                  insideIfElse = false; // Reset the flag
+            }
+
+              // Add the loop end label
+            whileNode->code += endLabel + ":\n";
+
+       $$ = whileNode;
       }
       
 ;
 
 continuestmt:
-   CONTINUE                         
+   CONTINUE SEMICOLON                       
       { 
-            // TODO: Implement later 
             CodeNode* node = new CodeNode;
-            node->code = "continue;\n";
+            node->code = "continue " + generateLabel() + "\n";
             $$ = node;
       }
 ;
 
 breakstmt:
-   BREAK                            
+   BREAK SEMICOLON           
    { 
-      // TODO: Implement later 
-      CodeNode* node = new CodeNode;
-      node->code = "break;\n";
+      
+     CodeNode* node = new CodeNode;
+      node->code = "break " + generateLabel() + "\n";
       $$ = node;
    }
 ;
