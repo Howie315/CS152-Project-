@@ -65,7 +65,7 @@ bool CheckReservedKeywords(std::string name) {
 std::string generateLabel() {
     static int labelCount = 0;
     std::ostringstream oss;
-    oss << ":label " << labelCount++;
+    oss << ":label" << labelCount++;
     return oss.str();
 }
 
@@ -563,7 +563,7 @@ ifstmt:
             // Add the true branch label and code
             ifNode->code += trueLabel + ":\n";
             ifNode->code += statementsNode->code;
-            ifNode->code += ":=label " + endLabel + "\n";
+            ifNode->code += "?:=label,predicate" + endLabel + "\n";
             
             // Add the false branch label and code
             ifNode->code += falseLabel + ":\n";
@@ -595,7 +595,7 @@ ifstmt:
             // Add the true branch label and code
             ifNode->code += trueLabel + ":\n";
             ifNode->code += trueStatementsNode->code;
-            ifNode->code += ":=label" + endLabel + "\n";
+            ifNode->code += "?:=label,predicate" + endLabel + "\n";
             
             // Add the false branch label and code
             ifNode->code += falseLabel + ":\n";
