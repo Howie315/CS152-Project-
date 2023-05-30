@@ -65,7 +65,7 @@ bool CheckReservedKeywords(std::string name) {
 std::string generateLabel() {
     static int labelCount = 0;
     std::ostringstream oss;
-    oss << "L" << labelCount++;
+    oss << ":label " << labelCount++;
     return oss.str();
 }
 
@@ -477,18 +477,18 @@ whilestmt:
       whileNode->code += statementsNode->code;
 
       // Generate code for the condition check
-      whileNode->code += conditionNode->name + " br " + loopLabel + ", " + endLabel + "\n";
+      whileNode->code += conditionNode->name + " :=label " + loopLabel + ", " + endLabel + "\n";
 
 
              if (insideLoop) 
              {
-                 whileNode->code += "br " + breakLabel + "\n";
+                 whileNode->code += ":=label " + breakLabel + "\n";
                   insideLoop = false; // Reset the flag
              }
 
           
             if(insideIfElse){
-                  whileNode->code += "br " + breakLabel + "\n";
+                  whileNode->code += ":=label " + breakLabel + "\n";
                   insideIfElse = false; // Reset the flag
             }
 
@@ -558,12 +558,12 @@ ifstmt:
             std::string endLabel = generateLabel();
             
             // Add the code for the condition check and branching
-            ifNode->code += conditionNode->name + " br " + trueLabel + ", " + falseLabel + "\n";
+            ifNode->code += conditionNode->name + " :=label " + trueLabel + ", " + falseLabel + "\n";
             
             // Add the true branch label and code
             ifNode->code += trueLabel + ":\n";
             ifNode->code += statementsNode->code;
-            ifNode->code += "br " + endLabel + "\n";
+            ifNode->code += ":=label " + endLabel + "\n";
             
             // Add the false branch label and code
             ifNode->code += falseLabel + ":\n";
@@ -590,17 +590,17 @@ ifstmt:
             std::string endLabel = generateLabel();
             
             // Add the code for the condition check and branching
-            ifNode->code += conditionNode->name + " br " + trueLabel + ", " + falseLabel + "\n";
+            ifNode->code += conditionNode->name + " :=label " + trueLabel + ", " + falseLabel + "\n";
             
             // Add the true branch label and code
             ifNode->code += trueLabel + ":\n";
             ifNode->code += trueStatementsNode->code;
-            ifNode->code += "br " + endLabel + "\n";
+            ifNode->code += ":=label" + endLabel + "\n";
             
             // Add the false branch label and code
             ifNode->code += falseLabel + ":\n";
             ifNode->code += falseStatementsNode->code;
-            ifNode->code += "br " + endLabel + "\n";
+            ifNode->code += ":=label " + endLabel + "\n";
             
             // Add the end label
             ifNode->code += endLabel + ":\n";
