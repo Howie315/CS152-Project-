@@ -84,11 +84,11 @@ COMMENT           \/\/[^\n]*\n?
 {GTE}     		    { lineCharacterCount += yyleng; return GTE; }
 {NE}              { lineCharacterCount += yyleng; return NE; }
 
-{FUNCTION}		    { printf("FUNCTION\n");   lineCharacterCount += yyleng; return FUNCTION; }
-{BEGINSCOPE}		  { printf("BEGINSCOPE\n"); lineCharacterCount += yyleng; return BEGINSCOPE; }
-{ENDSCOPE}		    { printf("ENDSCOPE\n");   lineCharacterCount += yyleng; return ENDSCOPE; }
-{BEGINPARAM}		  { printf("BEGINPARAM\n"); lineCharacterCount += yyleng; return BEGINPARAM; }
-{ENDPARAM}		    { printf("ENDPARAM\n");   lineCharacterCount += yyleng; return ENDPARAM; }
+{FUNCTION}		    { lineCharacterCount += yyleng; return FUNCTION; }
+{BEGINSCOPE}		  { lineCharacterCount += yyleng; return BEGINSCOPE; }
+{ENDSCOPE}		    { lineCharacterCount += yyleng; return ENDSCOPE; }
+{BEGINPARAM}		  { lineCharacterCount += yyleng; return BEGINPARAM; }
+{ENDPARAM}		    { lineCharacterCount += yyleng; return ENDPARAM; }
 {BEGINBRACKET}	  { lineCharacterCount += yyleng; return BEGINBRACKET; }
 {ENDBRACKET}		  { lineCharacterCount += yyleng; return ENDBRACKET; }
 {IF}          	  { lineCharacterCount += yyleng; return IF;}
@@ -110,7 +110,7 @@ COMMENT           \/\/[^\n]*\n?
 {OUTPUT}		      { lineCharacterCount += yyleng; return OUTPUT; }
 {INPUT}			      { lineCharacterCount += yyleng; return INPUT; }
 
-{IDENTIFIER}   	  { printf("IDENTIFIER: %s\n", yytext);
+{IDENTIFIER}   	  { //printf("IDENTIFIER: %s\n", yytext);
                     lineCharacterCount += yyleng; 
                     char* token = new char[yyleng];
                     strcpy(token, yytext);
@@ -120,7 +120,7 @@ COMMENT           \/\/[^\n]*\n?
                   }
 {BAD_IDENTIFIER}  { printf("Error: Invalid identifier %s on line %d, col %d\n", yytext, lineCount + 1, lineCharacterCount + 1); lineCharacterCount += yyleng; exit(1); }
 
-{NUMBER}      	  { printf("NUMBER: %d\n", atoi(yytext));
+{NUMBER}      	  { //printf("NUMBER: %d\n", atoi(yytext));
                     lineCharacterCount += yyleng; 
                     char* token = new char[yyleng];
                     strcpy(token, yytext);

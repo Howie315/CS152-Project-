@@ -16,9 +16,8 @@ int  count_names = 0;
 int count_params = 0;
 
 bool main_exists = false;
-bool insideLoop = false;
-bool insideIfElse = false;
-enum Type { Integer, Array, Boolean, Double, Character};
+
+enum Type { Integer, Array, Boolean, Double, Character };
 
 /*
 
@@ -65,12 +64,10 @@ bool CheckReservedKeywords(std::string name) {
 std::string generateLabel() {
     static int labelCount = 0;
     std::ostringstream oss;
-    oss << ":label" << labelCount++;
+    oss << "L" << labelCount++;
     return oss.str();
 }
 
-std::vector<std::string> breakStack;
-std::vector<std::string> continueStack;
 
 // remember that Bison is a bottom up parser: that it parses leaf nodes first before
 // parsing the parent nodes. So control flow begins at the leaf grammar nodes
@@ -368,7 +365,7 @@ type:
 statements:
       statement SEMICOLON statements  
       {  
-           
+            //  SEGFAULT HERE from uninit
             CodeNode *node1 = $1;
             CodeNode *node2 = $3;
             CodeNode *node = new CodeNode;
@@ -378,13 +375,13 @@ statements:
       }
 |     controlstmt statements         
       { 
-           
+            // TODO: Implement later 
             CodeNode* node1 = $1;
             CodeNode* node2 = $2;
             CodeNode* combinedNode = new CodeNode;
             combinedNode->code = node1->code + node2->code;
 
-            $$ = combinedNode; 
+            $$ = combinedNode;
       }
 |     %empty                          
       {
@@ -394,34 +391,17 @@ statements:
 ;
 
 controlstmt:
-      whilestmt     
+      whilestmt
       { 
-            // TODO: Implement later  
             CodeNode* whileNode = $1;
-           
             $$ = whileNode;
-            
       }
 |     ifstmt        
       { 
-            // TODO: Implement later
             CodeNode* ifNode = $1;
-            
             $$ = ifNode;
             
       }
-|     continuestmt  
-      { 
-            CodeNode* continueNode = $1;
-            $$ = continueNode;
-      }
-|     breakstmt     
-      { 
-            CodeNode* breakNode = $1;
-          
-            $$ = breakNode;
-      }
-      
 ;
 
 statement: 
@@ -439,12 +419,10 @@ statement:
       }
 |     continuestmt  
       { 
-            // TODO: Implement later 
             CodeNode *node = $1; $$ = node;  
       }
 |     breakstmt     
       { 
-            // TODO: Implement later 
             CodeNode *node = $1; $$ = node;  
       }
 |     expression
@@ -456,65 +434,72 @@ statement:
 whilestmt:
      WHILE BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE      
       {
-             CodeNode* conditionNode = $3;
-      CodeNode* statementsNode = $6;
+            CodeNode* whileNode = new CodeNode;
 
-      CodeNode* whileNode = new CodeNode;
+            CodeNode* conditionNode;
+            CodeNode* statementsNode;
 
-      // Generate code for the condition
-      whileNode->code += conditionNode->code;
+            conditionNode = $3;
+            statementsNode = $6;
 
-      // Create labels for the loop
-      std::string loopLabel = generateLabel();
-      std::string endLabel = generateLabel();
-      std::string continueLabel = generateLabel();
-      std::string breakLabel = generateLabel();
+            std::string loopLabel = generateLabel();
+            std::string endLabel = generateLabel();
 
-      // Add the loop start label
-      whileNode->code += loopLabel + ":\n";
+            whileNode->code += ": " + loopLabel + "\n";
 
-      // Add the code for the statements
-      whileNode->code += statementsNode->code;
+            whileNode->code += conditionNode->code;
 
-      // Generate code for the condition check
-      whileNode->code += conditionNode->name + " :=label " + loopLabel + ", " + endLabel + "\n";
+            whileNode->code += "! " + conditionNode->name + ", " + conditionNode->name + "\n";
 
+            // Generate code for the condition check
+            whileNode->code += "?:= " + endLabel + ", " + conditionNode->name + "\n";
 
-             if (insideLoop) 
-             {
-                 whileNode->code += ":=label " + breakLabel + "\n";
-                  insideLoop = false; // Reset the flag
-             }
+            // Add statements code
+            whileNode->code += statementsNode->code;
 
-          
-            if(insideIfElse){
-                  whileNode->code += ":=label " + breakLabel + "\n";
-                  insideIfElse = false; // Reset the flag
+            // FIX ANY CONTINUES
+            // HAHAHAHAHAH I CANT BELIEVE THIS WORKS
+
+            std::string labelJump = ":= " + loopLabel + "\n";
+            size_t pos = 0;
+            while ((pos = whileNode->code.find("CONTINUE_REPLACE", pos)) != std::string::npos) {
+                  whileNode->code.replace(pos, 17, labelJump);
+                  pos += labelJump.size();
             }
 
-              // Add the loop end label
-            whileNode->code += endLabel + ":\n";
+            // FIX ANY BREAKS
+            // Same jank solution
 
-       $$ = whileNode;
+            std::string endJump = ":= " + endLabel + "\n";
+            pos = 0;
+            while ((pos = whileNode->code.find("BREAK_REPLACE", pos)) != std::string::npos) {
+                  whileNode->code.replace(pos, 14, endJump);
+                  pos += endJump.size();
+            }
+
+            whileNode->code += ":= " + loopLabel + "\n";
+
+            // Add the end label at the end of the while code
+            whileNode->code += ": " + endLabel + "\n";
+        
+            $$ = whileNode;
       }
-      
 ;
 
 continuestmt:
-   CONTINUE SEMICOLON                       
+   CONTINUE                         
       { 
             CodeNode* node = new CodeNode;
-            node->code = "continue " + generateLabel() + "\n";
+            node->code = "CONTINUE_REPLACE\n";
             $$ = node;
       }
 ;
 
 breakstmt:
-   BREAK SEMICOLON           
+   BREAK                            
    { 
-      
-     CodeNode* node = new CodeNode;
-      node->code = "break " + generateLabel() + "\n";
+      CodeNode* node = new CodeNode;
+      node->code = "BREAK_REPLACE\n";
       $$ = node;
    }
 ;
@@ -544,67 +529,59 @@ returnstmt:
 ifstmt:
       IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE                                      
       { 
-            CodeNode* conditionNode = $3;
-            CodeNode* statementsNode = $6;
-            
             CodeNode* ifNode = new CodeNode;
-            
-            // Generate code for the condition
-            ifNode->code += conditionNode->code;
-            
-            // Create labels for the branches
-            std::string trueLabel = generateLabel();
-            std::string falseLabel = generateLabel();
+
+            CodeNode* conditionNode;
+            CodeNode* statementsNode;
+
+            conditionNode = $3;
+            statementsNode = $6;
+
             std::string endLabel = generateLabel();
-            
-            // Add the code for the condition check and branching
-            ifNode->code += conditionNode->name + " :=label " + trueLabel + ", " + falseLabel + "\n";
-            
-            // Add the true branch label and code
-            ifNode->code += trueLabel + ":\n";
+
+            ifNode->code += conditionNode->code;
+
+            ifNode->code += "! " + conditionNode->name + ", " + conditionNode->name + "\n";
+
+            ifNode->code += "?:= " + endLabel + ", " + conditionNode->name + "\n";
+
             ifNode->code += statementsNode->code;
-            ifNode->code += "?:=label,predicate" + endLabel + "\n";
-            
-            // Add the false branch label and code
-            ifNode->code += falseLabel + ":\n";
-            
-            // Add the end label
-            ifNode->code += endLabel + ":\n";
-            
+
+            ifNode->code += ": " + endLabel + "\n";
+
             $$ = ifNode;
       }
 |     IF BEGINPARAM expression ENDPARAM BEGINSCOPE statements ENDSCOPE ELSE BEGINSCOPE statements ENDSCOPE  
       { 
-            CodeNode* conditionNode = $3;
-            CodeNode* trueStatementsNode = $6;
-            CodeNode* falseStatementsNode = $10;
-            
             CodeNode* ifNode = new CodeNode;
-            
-            // Generate code for the condition
-            ifNode->code += conditionNode->code;
-            
-            // Create labels for the branches
-            std::string trueLabel = generateLabel();
+
+            CodeNode* conditionNode;
+            CodeNode* trueStatementsNode;
+            CodeNode* falseStatementsNode;
+
+            conditionNode = $3;
+            trueStatementsNode = $6;
+            falseStatementsNode = $10;
+
             std::string falseLabel = generateLabel();
             std::string endLabel = generateLabel();
-            
-            // Add the code for the condition check and branching
-            ifNode->code += conditionNode->name + " :=label " + trueLabel + ", " + falseLabel + "\n";
-            
-            // Add the true branch label and code
-            ifNode->code += trueLabel + ":\n";
+
+            ifNode->code += conditionNode->code;
+
+            ifNode->code += "! " + conditionNode->name + ", " + conditionNode->name + "\n";
+
+            ifNode->code += "?:= " + falseLabel + ", " + conditionNode->name + "\n";
+
             ifNode->code += trueStatementsNode->code;
-            ifNode->code += "?:=label,predicate" + endLabel + "\n";
-            
-            // Add the false branch label and code
-            ifNode->code += falseLabel + ":\n";
+
+            ifNode->code += ":= " + endLabel + "\n";
+
+            ifNode->code += ": " + falseLabel + "\n";
+
             ifNode->code += falseStatementsNode->code;
-            ifNode->code += ":=label " + endLabel + "\n";
-            
-            // Add the end label
-            ifNode->code += endLabel + ":\n";
-            
+
+            ifNode->code += ": " + endLabel + "\n";
+
             $$ = ifNode;
       }
 ;
@@ -704,8 +681,6 @@ declaration:
 
                   add_variable_to_symbol_table(id, $1);
             }
-
-            print_symbol_table();
 
             //    Create Declaration 
             node->code = ". ";
@@ -926,6 +901,8 @@ eqop:
       { 
             CodeNode* node = new CodeNode;
             node->code = "!= ";
+
+            $$ = node;
       }
 ;
 
@@ -1179,40 +1156,37 @@ term:
 
 int main()
 {
+	reservedKeywords.push_back("if");
+	reservedKeywords.push_back("else");
+	reservedKeywords.push_back("for");
+	reservedKeywords.push_back("while");
+	reservedKeywords.push_back("continue");
+	reservedKeywords.push_back("break");
+	reservedKeywords.push_back("true");
+	reservedKeywords.push_back("false");
+	reservedKeywords.push_back("return");
+	reservedKeywords.push_back("void");
+	reservedKeywords.push_back("and");
+	reservedKeywords.push_back("or");
+	reservedKeywords.push_back("mod");
+	reservedKeywords.push_back("dbl");
+	reservedKeywords.push_back("int");
+	reservedKeywords.push_back("flt");
+	reservedKeywords.push_back("bln");
+	reservedKeywords.push_back("chr");
+	reservedKeywords.push_back("intake");
+	reservedKeywords.push_back("defecate");
+	reservedKeywords.push_back("func");
+	reservedKeywords.push_back("main");
 
-reservedKeywords.push_back("if");
-reservedKeywords.push_back("else");
-reservedKeywords.push_back("for");
-reservedKeywords.push_back("while");
-reservedKeywords.push_back("continue");
-reservedKeywords.push_back("break");
-reservedKeywords.push_back("true");
-reservedKeywords.push_back("false");
-reservedKeywords.push_back("return");
-reservedKeywords.push_back("void");
-reservedKeywords.push_back("and");
-reservedKeywords.push_back("or");
-reservedKeywords.push_back("mod");
-reservedKeywords.push_back("dbl");
-reservedKeywords.push_back("int");
-reservedKeywords.push_back("flt");
-reservedKeywords.push_back("bln");
-reservedKeywords.push_back("chr");
-reservedKeywords.push_back("intake");
-reservedKeywords.push_back("defecate");
-reservedKeywords.push_back("func");
-reservedKeywords.push_back("main");
-
-
-
-  yyparse();
-  print_symbol_table();
-  return 0;
+      yyparse();
+      print_symbol_table();
+      return 0;
 }
 
 void yyerror(const char* s)
 {
-  printf("ERROR on line %d: %s\n", lineCount + 1, s);
+      printf("ERROR on line %d: %s\n", lineCount + 1, s);
 
-  exit(1);
+      exit(1);
 }

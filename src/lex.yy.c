@@ -885,27 +885,27 @@ YY_RULE_SETUP
 case 17:
 YY_RULE_SETUP
 #line 87 "lexer.lex"
-{ printf("FUNCTION\n");   lineCharacterCount += yyleng; return FUNCTION; }
+{ lineCharacterCount += yyleng; return FUNCTION; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
 #line 88 "lexer.lex"
-{ printf("BEGINSCOPE\n"); lineCharacterCount += yyleng; return BEGINSCOPE; }
+{ lineCharacterCount += yyleng; return BEGINSCOPE; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
 #line 89 "lexer.lex"
-{ printf("ENDSCOPE\n");   lineCharacterCount += yyleng; return ENDSCOPE; }
+{ lineCharacterCount += yyleng; return ENDSCOPE; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
 #line 90 "lexer.lex"
-{ printf("BEGINPARAM\n"); lineCharacterCount += yyleng; return BEGINPARAM; }
+{ lineCharacterCount += yyleng; return BEGINPARAM; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
 #line 91 "lexer.lex"
-{ printf("ENDPARAM\n");   lineCharacterCount += yyleng; return ENDPARAM; }
+{ lineCharacterCount += yyleng; return ENDPARAM; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
@@ -1005,7 +1005,7 @@ YY_RULE_SETUP
 case 41:
 YY_RULE_SETUP
 #line 113 "lexer.lex"
-{ printf("IDENTIFIER: %s\n", yytext);
+{ //printf("IDENTIFIER: %s\n", yytext);
                     lineCharacterCount += yyleng; 
                     char* token = new char[yyleng];
                     strcpy(token, yytext);
@@ -1022,7 +1022,7 @@ YY_RULE_SETUP
 case 43:
 YY_RULE_SETUP
 #line 123 "lexer.lex"
-{ printf("NUMBER: %d\n", atoi(yytext));
+{ //printf("NUMBER: %d\n", atoi(yytext));
                     lineCharacterCount += yyleng; 
                     char* token = new char[yyleng];
                     strcpy(token, yytext);

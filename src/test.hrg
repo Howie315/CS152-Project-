@@ -1,49 +1,26 @@
-void func main() {
-	int n;
-	int a[1000];
+void func main() 
+{
 	int i;
-	int j;
-	int x;
-	int sqrt_n;
-	// compute the square root of n and put the result in sqrt_n 
-	n = intake();
-	x = n;
-	while (x > n / x) 
-	{
-		x = (x+n/x)/2;
-	}
-	sqrt_n = x;
-	// initialization of the array 
-	i = 2;
-	while (i <= n) 
-	{
-		a[i] = 0;
-		i = i + 1;
-	}
-	
-	
-	while (i <= sqrt_n) 
-	{
-		if (a[i] := 0) 
-		{
-			// i prime, so eliminate its multiples 
-			j = i+i;
-			while (j <= n) 
-			{
-				a[j] = 1;
-				j = j + i;
+	i = 0;
+
+	int a;
+	a = 100;
+
+	while (i ~= 6) {
+		defecate(i);
+		if (i % 2 := 0) {
+			i = i + 1;
+			continue;
+		}
+		while (a < 110) {
+			if (a := 105) {
+				a = a + 1;
+				break;
 			}
+			defecate(a);
+			a = a + 1;
 		}
-		i = i + 1;
-	}
-	// print primes 
-	i = 2;
-	while (i <= n) 
-	{
-		if (a[i] := 0) 
-		{
-			defecate(i);
-		}
+		a = 100;
 		i = i + 1;
 	}
 }
