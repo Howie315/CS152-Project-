@@ -130,7 +130,7 @@ COMMENT           \/\/[^\n]*\n?
                   }
 {DECIMAL}    		  { lineCharacterCount += yyleng; return DECIMAL; }
 
-{COMMENT}		      { lineCharacterCount += yyleng; }
+{COMMENT}		      { lineCharacterCount += yyleng; lineCount++; }
 
 {NEWLINE}         { lineCount++; lineCharacterCount = 0;}
 {WHITESPACE}      { lineCharacterCount += yyleng;}
