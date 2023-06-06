@@ -45,48 +45,48 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    INTEGER = 258,
-    DOUBLE = 259,
-    BOOLEAN = 260,
-    CHAR = 261,
-    ASSIGN = 262,
-    ADD = 263,
-    SUB = 264,
-    DIV = 265,
-    MUL = 266,
-    MOD = 267,
-    FUNCTION = 268,
-    BEGINSCOPE = 269,
-    ENDSCOPE = 270,
-    BEGINPARAM = 271,
-    ENDPARAM = 272,
-    BEGINBRACKET = 273,
-    ENDBRACKET = 274,
-    IF = 275,
-    ELSE = 276,
-    FOR = 277,
-    WHILE = 278,
-    CONTINUE = 279,
-    BREAK = 280,
-    TRUE = 281,
-    FALSE = 282,
-    RETURN = 283,
-    VOID = 284,
-    NOT = 285,
-    AND = 286,
-    OR = 287,
-    SEMICOLON = 288,
-    COMMA = 289,
-    OUTPUT = 290,
-    INPUT = 291,
-    NUMBER = 292,
-    DECIMAL = 293,
-    EQ = 294,
-    LT = 295,
-    LTE = 296,
-    GT = 297,
-    GTE = 298,
-    NE = 299,
+    DOUBLE = 258,
+    BOOLEAN = 259,
+    CHAR = 260,
+    ASSIGN = 261,
+    ADD = 262,
+    SUB = 263,
+    DIV = 264,
+    MUL = 265,
+    MOD = 266,
+    EQ = 267,
+    LT = 268,
+    LTE = 269,
+    GT = 270,
+    GTE = 271,
+    NE = 272,
+    FUNCTION = 273,
+    BEGINSCOPE = 274,
+    ENDSCOPE = 275,
+    BEGINPARAM = 276,
+    ENDPARAM = 277,
+    BEGINBRACKET = 278,
+    ENDBRACKET = 279,
+    IF = 280,
+    ELSE = 281,
+    FOR = 282,
+    WHILE = 283,
+    CONTINUE = 284,
+    BREAK = 285,
+    TRUE = 286,
+    FALSE = 287,
+    RETURN = 288,
+    VOID = 289,
+    NOT = 290,
+    AND = 291,
+    OR = 292,
+    SEMICOLON = 293,
+    COMMA = 294,
+    OUTPUT = 295,
+    INPUT = 296,
+    NUMBER = 297,
+    DECIMAL = 298,
+    INTEGER = 299,
     IDENTIFIER = 300
   };
 #endif
@@ -96,13 +96,14 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 88 "parser.y" /* yacc.c:1909  */
+#line 172 "parser.y" /* yacc.c:1909  */
 
-  char *op_val;
-  struct CodeNode *code_node;
-  int int_val;
+      char* op_val;
+      struct CodeNode* code_node;
+      struct ExpNode* exp_node;
+      int int_val;
 
-#line 106 "parser.tab.h" /* yacc.c:1909  */
+#line 107 "parser.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;

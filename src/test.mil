@@ -1,0 +1,21 @@
+func main
+. i
+= i, 0
+: L0
+. _temp0
+<  _temp0, i, 10
+! _temp0, _temp0
+?:= L1, _temp0
+. _temp1
++  _temp1, i, 1
+= i, _temp1
+.> i
+:= L0
+: L1
+endfunc
+
+symbol table:
+--------------------
+function: main
+  locals: i
+--------------------
